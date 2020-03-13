@@ -100,7 +100,7 @@ namespace HopHop.GUI.Controls
     {
       Click?.Invoke();
 
-      IsSelected = true;
+      //IsSelected = true;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

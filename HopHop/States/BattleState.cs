@@ -26,6 +26,19 @@ namespace HopHop.States
 
     private Camera _camera;
 
+    private SpriteFont _font;
+
+    private float _enemyTimer = 5f;
+
+    public BattleStates NextState
+    {
+      get { return _gui.NextState; }
+      set
+      {
+        _gui.NextState = value;
+      }
+    }
+
     public BattleStates State
     {
       get { return _gui.State; }
@@ -34,8 +47,6 @@ namespace HopHop.States
         _gui.State = value;
       }
     }
-
-    private List<Vector2> _tests;
 
     public BattleState(GameModel gameModel, List<Unit> units)
       : base(gameModel)
@@ -64,6 +75,8 @@ namespace HopHop.States
       _gui = new BattleGUI(_gameModel);
 
       _camera = new Camera();
+
+      _font = Content.Load<SpriteFont>("Fonts/Font");
     }
 
     public override void UnloadContent()
@@ -76,22 +89,62 @@ namespace HopHop.States
 
     public override void Update(GameTime gameTime)
     {
-      BaseGame.GameMouse.AddCamera(_camera.Transform);
-
-      if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Tab))
+      if (State != NextState)
       {
-        _camera.GoTo(_units[_unitIndex].Rectangle);
-        _unitIndex++;
+        if (NextState == BattleStates.PlayerTurn)
+        {
+          _units.ForEach(c =>
+          {
+            c.Stamina = 2;
+          });
+        }
 
-        if (_unitIndex >= _units.Count)
-          _unitIndex = 0;
+        State = NextState;
       }
 
+      BaseGame.GameMouse.AddCamera(_camera.Transform);
 
-      _gui.Update(gameTime);
-      _camera.Update(gameTime);
-      _unitManager.Update(gameTime);
-      _mapManager.Update(gameTime);
+      switch (State)
+      {
+        case BattleStates.PlayerTurn:
+
+          if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Tab))
+          {
+            _camera.GoTo(_units[_unitIndex].Rectangle);
+            _unitIndex++;
+
+            if (_unitIndex >= _units.Count)
+              _unitIndex = 0;
+          }
+
+
+          _gui.Update(gameTime);
+          _camera.Update(gameTime);
+          _unitManager.Update(gameTime);
+          _mapManager.Update(gameTime);
+
+
+          if (_units.All(c => c.Stamina == 0))
+          {
+            NextState = BattleStates.EnemyTurn;
+          }
+
+          break;
+
+        case BattleStates.EnemyTurn:
+
+          _enemyTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+          if (_enemyTimer <= 0)
+          {
+            _enemyTimer = 5f;
+            NextState = BattleStates.PlayerTurn;
+          }
+
+          break;
+        default:
+          break;
+      }
     }
 
     public override void Draw(GameTime gameTime)
@@ -103,7 +156,22 @@ namespace HopHop.States
 
       SpriteBatch.End();
 
-      _gui.Draw(gameTime, SpriteBatch);
+      switch (State)
+      {
+        case BattleStates.PlayerTurn:
+          _gui.Draw(gameTime, SpriteBatch);
+          break;
+        case BattleStates.EnemyTurn:
+          SpriteBatch.Begin();
+
+          var text = $"Enemy Turn: {_enemyTimer:00.00}";
+          var position = new Vector2(BaseGame.ScreenWidth / 2, BaseGame.ScreenHeight / 2) -
+            new Vector2(_font.MeasureString(text).X / 2, _font.MeasureString(text).Y / 2);
+
+          SpriteBatch.DrawString(_font, text, position, Color.Red);
+          SpriteBatch.End();
+          break;
+      }
     }
   }
 }

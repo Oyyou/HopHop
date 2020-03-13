@@ -18,6 +18,8 @@ namespace HopHop.GUI
 
     public BattleStates State;
 
+    public BattleStates NextState;
+
     public BattleGUI(GameModel gameModel)
     {
       var content = gameModel.Content;
@@ -34,6 +36,11 @@ namespace HopHop.GUI
     public void Update(GameTime gameTime)
     {
       _endTurnButton.Update(gameTime);
+
+      if (_endTurnButton.Clicked)
+      {
+        NextState = BattleStates.EnemyTurn;
+      }
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
