@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29424.173
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HopHop", "HopHop\HopHop.csproj", "{54BADD42-CBFA-48A9-AA2F-4C5313DB64B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{C783FC14-114F-4549-8092-73FB02DF8CC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HopHop.GUI", "HopHop.GUI\HopHop.GUI.csproj", "{9B9F31F4-CBB3-4FE5-966C-72097FE9483C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HopHop.Lib", "HopHop.Lib\HopHop.Lib.csproj", "{EC6F5DD4-8555-45D7-ABD4-274EAC1FEDCD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{54BADD42-CBFA-48A9-AA2F-4C5313DB64B6}.Debug|x86.ActiveCfg = Debug|x86
+		{54BADD42-CBFA-48A9-AA2F-4C5313DB64B6}.Debug|x86.Build.0 = Debug|x86
+		{54BADD42-CBFA-48A9-AA2F-4C5313DB64B6}.Release|x86.ActiveCfg = Release|x86
+		{54BADD42-CBFA-48A9-AA2F-4C5313DB64B6}.Release|x86.Build.0 = Release|x86
+		{C783FC14-114F-4549-8092-73FB02DF8CC4}.Debug|x86.ActiveCfg = Debug|x86
+		{C783FC14-114F-4549-8092-73FB02DF8CC4}.Debug|x86.Build.0 = Debug|x86
+		{C783FC14-114F-4549-8092-73FB02DF8CC4}.Release|x86.ActiveCfg = Release|x86
+		{C783FC14-114F-4549-8092-73FB02DF8CC4}.Release|x86.Build.0 = Release|x86
+		{9B9F31F4-CBB3-4FE5-966C-72097FE9483C}.Debug|x86.ActiveCfg = Debug|x86
+		{9B9F31F4-CBB3-4FE5-966C-72097FE9483C}.Debug|x86.Build.0 = Debug|x86
+		{9B9F31F4-CBB3-4FE5-966C-72097FE9483C}.Release|x86.ActiveCfg = Release|x86
+		{9B9F31F4-CBB3-4FE5-966C-72097FE9483C}.Release|x86.Build.0 = Release|x86
+		{EC6F5DD4-8555-45D7-ABD4-274EAC1FEDCD}.Debug|x86.ActiveCfg = Debug|x86
+		{EC6F5DD4-8555-45D7-ABD4-274EAC1FEDCD}.Debug|x86.Build.0 = Debug|x86
+		{EC6F5DD4-8555-45D7-ABD4-274EAC1FEDCD}.Release|x86.ActiveCfg = Release|x86
+		{EC6F5DD4-8555-45D7-ABD4-274EAC1FEDCD}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {80379330-71DB-4C4B-BA0F-AF54BC6EE7ED}
+	EndGlobalSection
+EndGlobal
