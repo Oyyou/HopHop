@@ -1,6 +1,6 @@
 ﻿using Engine.Input;
+using HopHop.Lib.Models;
 using HopHop.MapStuff;
-using HopHop.Models;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace HopHop.Units
 {
-  public class Unit : IClickable
+  public class Unit : IClickable, IMapable
   {
-    private Color _colour;
+    protected Color _colour = Color.White;
 
     public Texture2D Texture { get; set; }
 

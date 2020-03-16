@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Engine;
 using Engine.Models;
 using HopHop.GUI;
 using HopHop.Lib;
 using HopHop.Managers;
+using HopHop.MapStuff;
 using HopHop.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,7 +22,13 @@ namespace HopHop.States
 
     private UnitManager _unitManager;
 
+    private List<Sprites.Sprite> _backgroundTiles;
+
     private readonly List<Unit> _units;
+
+    private List<Enemy> _enemies;
+
+    private List<Sprites.Sprite> _walls;
 
     private BattleGUI _gui;
 
@@ -56,6 +64,30 @@ namespace HopHop.States
 
     public override void LoadContent()
     {
+      _walls = new List<Sprites.Sprite>()
+      {
+        new Sprites.Sprite(Content.Load<Texture2D>("Walls/Wall_001"))
+        {
+          TilePosition = Map.PointToVector2(5, 0),
+        },
+        new Sprites.Sprite(Content.Load<Texture2D>("Cover/Crate"))
+        {
+          TilePosition = Map.PointToVector2(3, 6),
+        },
+        new Sprites.Sprite(Content.Load<Texture2D>("Cover/Crate"))
+        {
+          TilePosition = Map.PointToVector2(5, 7),
+        },
+      };
+
+      _enemies = new List<Enemy>()
+      {
+        new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
+        {
+          TilePosition = Map.PointToVector2(7, 7),
+        },
+      };
+
       _mapManager = new MapManager(Content);
 
       _mapManager.Refresh = () =>
@@ -65,16 +97,49 @@ namespace HopHop.States
         foreach (var sprite in _units)
           _mapManager.Map.AddItem(sprite.TileRectangle);
 
+        foreach (var sprite in _enemies)
+          _mapManager.Map.AddItem(sprite.TileRectangle);
+
+        foreach (var sprite in _walls)
+          _mapManager.Map.AddItem(sprite.TileRectangle);
+
         _mapManager.Map.Write();
       };
+
+      var images = new List<string>()
+      {
+        "Stone_01",
+        "Stone_02",
+        "Stone_03",
+        "Stone_04",
+      };
+
+      _backgroundTiles = new List<Sprites.Sprite>();
+
+
+      for (int y = 0; y < _mapManager.Map.GetHeight(); y++)
+      {
+        for (int x = 0; x < _mapManager.Map.GetWidth(); x++)
+        {
+          _backgroundTiles.Add(new Sprites.Sprite(Content.Load<Texture2D>($"Tiles/Stone/{images[BaseGame.Random.Next(0, images.Count)]}"))
+          {
+            HasFixedLayer = true,
+            Layer = 0,
+            TilePosition = Map.PointToVector2(x, y)
+          });
+        }
+      }
 
       _mapManager.Refresh();
 
       _unitManager = new UnitManager(_units, _mapManager);
 
-      _gui = new BattleGUI(_gameModel);
+      _gui = new BattleGUI(_gameModel, _units.Select(c => c.UnitModel).ToList());
 
-      _camera = new Camera();
+      _camera = new Camera()
+      {
+        Position = new Vector2(BaseGame.ScreenWidth / 2, BaseGame.ScreenHeight / 2),
+      };
 
       _font = Content.Load<SpriteFont>("Fonts/Font");
     }
@@ -117,12 +182,10 @@ namespace HopHop.States
               _unitIndex = 0;
           }
 
-
           _gui.Update(gameTime);
           _camera.Update(gameTime);
           _unitManager.Update(gameTime);
           _mapManager.Update(gameTime);
-
 
           if (_units.All(c => c.Stamina == 0))
           {
@@ -151,8 +214,17 @@ namespace HopHop.States
     {
       SpriteBatch.Begin(SpriteSortMode.FrontToBack, transformMatrix: _camera.Transform);
 
+      //foreach (var tile in _backgroundTiles)
+      //  tile.Draw(gameTime, SpriteBatch);
+
       _mapManager.Draw(gameTime, SpriteBatch);
       _unitManager.Draw(gameTime, SpriteBatch);
+
+      foreach (var enemy in _enemies)
+        enemy.Draw(gameTime, SpriteBatch);
+
+      foreach (var wall in _walls)
+        wall.Draw(gameTime, SpriteBatch);
 
       SpriteBatch.End();
 

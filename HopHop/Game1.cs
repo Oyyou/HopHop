@@ -1,6 +1,7 @@
 ﻿using Engine.Input;
 using Engine.Models;
 using HopHop.Lib;
+using HopHop.Lib.Models;
 using HopHop.Managers;
 using HopHop.MapStuff;
 using HopHop.States;
@@ -65,34 +66,74 @@ namespace HopHop
       {
         new Unit(testTexture)
         {
-          TilePosition = Map.PointToVector2(0, 0),
-          UnitModel = new Models.UnitModel()
+          TilePosition = Map.PointToVector2(1, 2),
+          UnitModel = new UnitModel()
           {
+            Name = "Fred",
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Abilities = new AbilitiesModel()
+            {
+              Ability1 = new AbilityModel("Ability 1", ""),
+              Ability2 = new AbilityModel("Ability 2", ""),
+              Ability3 = new AbilityModel("Ability 3", ""),
+              Ability4 = new AbilityModel("Ability 4", ""),
+            }
           },
           Layer = 0.6f,
         },
         new Unit(testTexture)
         {
-          TilePosition = Map.PointToVector2(2, 0),
-          UnitModel = new Models.UnitModel()
+          TilePosition = Map.PointToVector2(4, 2),
+          UnitModel = new UnitModel()
           {
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Abilities = new AbilitiesModel()
+            {
+              Ability1 = new AbilityModel("Ability 1", ""),
+              Ability2 = new AbilityModel("Ability 2", ""),
+              Ability3 = new AbilityModel("Ability 3", ""),
+              Ability4 = new AbilityModel("Ability 4", ""),
+            }
           },
           Layer = 0.6f,
         },
         new Unit(testTexture)
         {
-          TilePosition = Map.PointToVector2(1, 1),
-          UnitModel = new Models.UnitModel()
+          TilePosition = Map.PointToVector2(2, 3),
+          UnitModel = new UnitModel()
           {
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Abilities = new AbilitiesModel()
+            {
+              Ability1 = new AbilityModel("Ability 1", ""),
+              Ability2 = new AbilityModel("Ability 2", ""),
+              Ability3 = new AbilityModel("Ability 3", ""),
+              Ability4 = new AbilityModel("Ability 4", ""),
+            }
+          },
+          Layer = 0.6f,
+        },
+        new Unit(testTexture)
+        {
+          TilePosition = Map.PointToVector2(0, 5),
+          UnitModel = new UnitModel()
+          {
+            Armour = 0,
+            Health = 4,
+            Speed = 5,
+            Abilities = new AbilitiesModel()
+            {
+              Ability1 = new AbilityModel("Ability 1", ""),
+              Ability2 = new AbilityModel("Ability 2", ""),
+              Ability3 = new AbilityModel("Ability 3", ""),
+              Ability4 = new AbilityModel("Ability 4", ""),
+            }
           },
           Layer = 0.6f,
         },

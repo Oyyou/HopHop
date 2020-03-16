@@ -96,7 +96,7 @@ namespace HopHop.Managers
           {
             Colour = colour,
             Position = Map.PointToVector2(path.X, path.Y),
-            Layer = 0.0f,
+            Layer = 0.05f,
           });
         }
       }

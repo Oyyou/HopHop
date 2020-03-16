@@ -14,7 +14,7 @@ namespace Engine
 
     public Vector2 Position { get; set; }
 
-    public Color Colour { get; set; }
+    public Color Colour { get; set; } = Color.White;
 
     public float Layer { get; set; }
 

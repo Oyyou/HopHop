@@ -52,7 +52,7 @@ namespace HopHop.GUI
 
       GameModel = new GameModel(Content, _graphics, _spriteBatch);
 
-      _battleGUI = new BattleGUI(GameModel);
+      _battleGUI = new BattleGUI(GameModel, new System.Collections.Generic.List<Lib.Models.UnitModel>());
     }
 
     /// <summary>

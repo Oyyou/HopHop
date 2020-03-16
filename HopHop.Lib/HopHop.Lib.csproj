@@ -45,6 +45,9 @@
     <Compile Include="BaseGame.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="Models\AbilitiesModel.cs" />
+    <Compile Include="Models\AbilityModel.cs" />
+    <Compile Include="Models\UnitModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +70,7 @@
       <Name>Engine</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
