@@ -107,6 +107,7 @@ namespace HopHop.Managers
       foreach (var sprite in _gridSprites)
         sprite.Draw(gameTime, spriteBatch);
 
+      // The tiles we see when the unit tries to move
       foreach (var sprite in _sprites)
         sprite.Draw(gameTime, spriteBatch);
     }

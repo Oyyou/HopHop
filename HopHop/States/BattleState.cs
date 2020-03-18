@@ -116,7 +116,6 @@ namespace HopHop.States
 
       _backgroundTiles = new List<Sprites.Sprite>();
 
-
       for (int y = 0; y < _mapManager.Map.GetHeight(); y++)
       {
         for (int x = 0; x < _mapManager.Map.GetWidth(); x++)
@@ -133,6 +132,7 @@ namespace HopHop.States
       _mapManager.Refresh();
 
       _unitManager = new UnitManager(_units, _mapManager);
+      _unitManager.LoadContent(Content);
 
       _gui = new BattleGUI(_gameModel, _units.Select(c => c.UnitModel).ToList());
 
@@ -149,8 +149,6 @@ namespace HopHop.States
       _unitManager.UnloadContent();
       _mapManager.UnloadContent();
     }
-
-    private int _unitIndex = 0;
 
     public override void Update(GameTime gameTime)
     {
@@ -175,16 +173,17 @@ namespace HopHop.States
 
           if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Tab))
           {
-            _camera.GoTo(_units[_unitIndex].Rectangle);
-            _unitIndex++;
+            _gui.SelectedHeroIndex++;
 
-            if (_unitIndex >= _units.Count)
-              _unitIndex = 0;
+            if (_gui.SelectedHeroIndex >= _units.Count)
+              _gui.SelectedHeroIndex = 0;
+
+            _camera.GoTo(_units[_gui.SelectedHeroIndex].TileRectangle);
           }
 
           _gui.Update(gameTime);
           _camera.Update(gameTime);
-          _unitManager.Update(gameTime);
+          _unitManager.Update(gameTime, _gui);
           _mapManager.Update(gameTime);
 
           if (_units.All(c => c.Stamina == 0))

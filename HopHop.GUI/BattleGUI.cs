@@ -31,16 +31,20 @@ namespace HopHop.GUI
     public BattleStates NextState;
 
     private Texture2D _abilityIconTexture;
+    private Texture2D _abilityIconClickedTexture;
 
-    private int _selectedHeroIndex = 0;
-    private int _selectedAbilityIndex = 0;
+    public int SelectedHeroIndex = 0;
+    private int _selectedAbilityIndex = -1;
 
     private UnitModel _previousUnit;
     private UnitModel _currentUnit;
 
+    public int SelectedUnitId { get; set; }
+
     public BattleGUI(GameModel gameModel, List<UnitModel> units)
     {
       _units = units;
+      SelectedUnitId = _units.First().Id;
 
       var content = gameModel.Content;
 
@@ -59,7 +63,9 @@ namespace HopHop.GUI
       };
 
       var heroIconTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon");
+      var heroIconClickedTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon_Clicked");
       _abilityIconTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon");
+      _abilityIconClickedTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon_Clicked");
 
       _heroIcons = new List<Button>();
       _abilityIcons = new List<Button>();
@@ -68,7 +74,7 @@ namespace HopHop.GUI
       var y = _controlPanel.Position.Y + 20;
       foreach (var unit in _units)
       {
-        _heroIcons.Add(new Button(heroIconTexture) { Position = new Vector2(x, y), });
+        _heroIcons.Add(new Button(heroIconTexture, heroIconClickedTexture) { Position = new Vector2(x, y), });
         x += heroIconTexture.Width + 2;
       }
     }
@@ -81,42 +87,60 @@ namespace HopHop.GUI
       if (_previousUnit == _currentUnit)
         return;
 
+      _selectedAbilityIndex = -1;
+
       _abilityIcons = new List<Button>();
 
       var x = _controlPanel.Position.X + 300;
       var y = _controlPanel.Position.Y + 36;
       foreach (var ability in _currentUnit.Abilities.Get())
       {
-        _abilityIcons.Add(new Button(_abilityIconTexture) { Position = new Vector2(x, y), });
+        _abilityIcons.Add(new Button(_abilityIconTexture, _abilityIconClickedTexture) { Position = new Vector2(x, y), });
         x += _abilityIconTexture.Width + 2;
       }
     }
 
     public void Update(GameTime gameTime)
     {
-      UpdateUnit(_units[_selectedHeroIndex]);
+      UpdateUnit(_units[SelectedHeroIndex]);
 
       _endTurnButton.Update(gameTime);
 
       if (_endTurnButton.Clicked)
         NextState = BattleStates.EnemyTurn;
 
+      UpdateHeroIcons(gameTime);
+
+      UpdateAbilityIcons(gameTime);
+    }
+
+    private void UpdateHeroIcons(GameTime gameTime)
+    {
       for (int i = 0; i < _heroIcons.Count; i++)
       {
         _heroIcons[i].Update(gameTime);
+        _heroIcons[i].IsSelected = false;
 
         if (_heroIcons[i].IsClicked)
-          _selectedHeroIndex = i;
+          SelectedHeroIndex = i;
       }
 
+      _heroIcons[SelectedHeroIndex].IsSelected = true;
+    }
+
+    private void UpdateAbilityIcons(GameTime gameTime)
+    {
       for (int i = 0; i < _abilityIcons.Count; i++)
       {
         _abilityIcons[i].Update(gameTime);
+        _abilityIcons[i].IsSelected = false;
 
         if (_abilityIcons[i].IsClicked)
           _selectedAbilityIndex = i;
       }
-      
+
+      if (_selectedAbilityIndex > -1)
+        _abilityIcons[_selectedAbilityIndex].IsSelected = true;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

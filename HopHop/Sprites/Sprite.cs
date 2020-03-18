@@ -48,6 +48,11 @@ namespace HopHop.Sprites
       Texture = texture;
     }
 
+    public virtual void Update(GameTime gameTime)
+    {
+
+    }
+
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
       if (!HasFixedLayer)

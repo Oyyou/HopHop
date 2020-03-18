@@ -68,9 +68,7 @@ namespace HopHop.Units
     internal void Move()
     {
       if (MovementPositions.Count == 0)
-      {
         return;
-      }
 
       var point = MovementPositions.First();
       var targetPosition = Map.PointToVector2(point.X, point.Y);

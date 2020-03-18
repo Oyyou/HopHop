@@ -13,6 +13,8 @@ namespace HopHop.GUI.Controls
   {
     private Texture2D _texture;
 
+    private Texture2D _clickTexture;
+
     private SpriteFont _font;
 
     protected Color _colour = Color.White;
@@ -63,6 +65,14 @@ namespace HopHop.GUI.Controls
       Origin = new Vector2(0, 0);
     }
 
+    public Button(Texture2D texture, Texture2D clickTexture)
+    {
+      _texture = texture;
+      _clickTexture = clickTexture;
+
+      Origin = new Vector2(0, 0);
+    }
+
     public Button(Texture2D texture, SpriteFont font)
       : this(texture)
     {
@@ -72,6 +82,7 @@ namespace HopHop.GUI.Controls
     public void UnloadContent()
     {
       _texture.Dispose();
+      _clickTexture?.Dispose();
     }
 
     public void Update(GameTime gameTime)
@@ -105,10 +116,10 @@ namespace HopHop.GUI.Controls
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-      if (IsSelected)
-        _colour = Color.Green;
-
       spriteBatch.Draw(_texture, Position, null, _colour, 0f, Origin, 1f, SpriteEffects.None, 0);
+
+      if(IsSelected && _clickTexture != null)
+        spriteBatch.Draw(_clickTexture, Position, null, _colour, 0f, Origin, 1f, SpriteEffects.None, 0);
 
       DrawText(spriteBatch);
     }

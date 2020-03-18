@@ -23,7 +23,7 @@ namespace Engine
       Texture = texture;
     }
 
-    public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+    public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
       spriteBatch.Draw(Texture, Position, null, Colour, 0f, new Vector2(0, 0), 1f, SpriteEffects.None, Layer);
     }

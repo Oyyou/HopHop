@@ -1,6 +1,9 @@
-﻿using HopHop.MapStuff;
+﻿using HopHop.GUI;
+using HopHop.MapStuff;
+using HopHop.Sprites;
 using HopHop.Units;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -14,7 +17,6 @@ namespace HopHop.Managers
   {
     public enum States
     {
-      Selecting,
       Selected,
       Moving,
     }
@@ -28,13 +30,27 @@ namespace HopHop.Managers
     private Point _previousMapPoint;
     private Point _currentMapPoint;
 
-    public States State { get; private set; } = States.Selecting;
+    private Engine.Sprite _unitPointerTile;
+
+    private UnitPointer _unitPointer;
+
+    public States State { get; private set; } = States.Selected;
 
     public UnitManager(List<Unit> units, MapManager mapDrawer)
     {
       _units = units;
 
-      _mapManager = mapDrawer;
+      _mapManager = mapDrawer;      
+    }
+
+    public void LoadContent(ContentManager content)
+    {
+      _unitPointerTile = new Engine.Sprite(content.Load<Texture2D>("Units/Misc/PointerTile"))
+      {
+        Layer = 0.20f,
+      };
+
+      _unitPointer = new UnitPointer(content.Load<Texture2D>("Units/Misc/Pointer"));
     }
 
     public void UnloadContent()
@@ -42,49 +58,16 @@ namespace HopHop.Managers
 
     }
 
-    public void Update(GameTime gameTime)
+    public void Update(GameTime gameTime, BattleGUI gui)
     {
+      _selectedUnit = _units[gui.SelectedHeroIndex];
 
       switch (State)
       {
-        case States.Selecting:
-
-          foreach (var sprite in _units)
-          {
-            sprite.TilesMoved = 0;
-            if (Game1.GameMouse.HasLeftClicked)
-            {
-              if (Game1.GameMouse.ValidObject == sprite)
-              {
-                _selectedUnit = sprite;
-                State = States.Selected;
-              }
-            }
-
-            sprite.Update(gameTime);
-          }
-
-          _mapManager.SetUnit(_selectedUnit);
-
-          break;
         case States.Selected:
 
           _previousMapPoint = _currentMapPoint;
           _currentMapPoint = Map.Vector2ToPoint(Game1.GameMouse.Position_WithCamera);
-
-          if (Game1.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape))
-          {
-            _selectedUnit?.SetPath(new List<Point>());
-            _selectedUnit = null;
-            State = States.Selecting;
-          }
-
-          if (Game1.GameMouse.HasLeftClicked)
-          {
-            _selectedUnit?.SetPath(new List<Point>());
-            _selectedUnit = null;
-            State = States.Selecting;
-          }
 
           if (Game1.GameMouse.HasRightClicked && _selectedUnit != null)
           {
@@ -104,14 +87,27 @@ namespace HopHop.Managers
           {
             _selectedUnit.UpdateStamina();
             _mapManager.Refresh();
-            _selectedUnit = null;
-            State = States.Selecting;
+
+            if(_selectedUnit.Stamina<=0)
+            {
+              gui.SelectedHeroIndex++;
+
+              if (gui.SelectedHeroIndex >= _units.Count)
+                gui.SelectedHeroIndex = 0;
+            }
+
+            //_selectedUnit = null;
+            State = States.Selected;
           }
 
           break;
         default:
           break;
       }
+
+      _unitPointerTile.Layer = _selectedUnit.Layer -= 0.001f;
+      _unitPointerTile.Position = _selectedUnit.TilePosition - new Vector2(4, 4);
+      _unitPointer.Update(gameTime, _selectedUnit.Position);
     }
 
     private void SetUnitPath()
@@ -129,6 +125,8 @@ namespace HopHop.Managers
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
+      _unitPointerTile.Draw(gameTime, spriteBatch);
+      _unitPointer.Draw(gameTime, spriteBatch);
 
       foreach (var sprite in _units)
         sprite.Draw(gameTime, spriteBatch);

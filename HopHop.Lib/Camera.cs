@@ -63,7 +63,7 @@ namespace HopHop.Lib
     {
       _moveTo = new Vector2(
         (rectangle.X + (rectangle.Width / 2)),
-        (rectangle.Y + (rectangle.Height/ 2)));
+        (rectangle.Y + (rectangle.Height / 2)) + (BaseGame.ScreenHeight / 6));
     }
   }
 }
