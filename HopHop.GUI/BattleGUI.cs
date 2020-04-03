@@ -22,7 +22,7 @@ namespace HopHop.GUI
 
     private Sprite _controlPanel;
 
-    private List<Button> _heroIcons;
+    private List<Button> _unitIcons;
 
     private List<Button> _abilityIcons;
 
@@ -33,7 +33,7 @@ namespace HopHop.GUI
     private Texture2D _abilityIconTexture;
     private Texture2D _abilityIconClickedTexture;
 
-    public int SelectedHeroIndex = 0;
+    public int SelectedUnitIndex = 0;
     private int _selectedAbilityIndex = -1;
 
     private UnitModel _previousUnit;
@@ -62,20 +62,20 @@ namespace HopHop.GUI
         Position = new Vector2(10, BaseGame.ScreenHeight - cpTexture.Height - 10),
       };
 
-      var heroIconTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon");
-      var heroIconClickedTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon_Clicked");
+      var unitIconTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon");
+      var unitIconClickedTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon_Clicked");
       _abilityIconTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon");
       _abilityIconClickedTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon_Clicked");
 
-      _heroIcons = new List<Button>();
+      _unitIcons = new List<Button>();
       _abilityIcons = new List<Button>();
 
       var x = _controlPanel.Position.X + 4;
       var y = _controlPanel.Position.Y + 20;
       foreach (var unit in _units)
       {
-        _heroIcons.Add(new Button(heroIconTexture, heroIconClickedTexture) { Position = new Vector2(x, y), });
-        x += heroIconTexture.Width + 2;
+        _unitIcons.Add(new Button(unitIconTexture, unitIconClickedTexture) { Position = new Vector2(x, y), });
+        x += unitIconTexture.Width + 2;
       }
     }
 
@@ -102,30 +102,30 @@ namespace HopHop.GUI
 
     public void Update(GameTime gameTime)
     {
-      UpdateUnit(_units[SelectedHeroIndex]);
+      UpdateUnit(_units[SelectedUnitIndex]);
 
       _endTurnButton.Update(gameTime);
 
       if (_endTurnButton.Clicked)
         NextState = BattleStates.EnemyTurn;
 
-      UpdateHeroIcons(gameTime);
+      UpdateUnitIcons(gameTime);
 
       UpdateAbilityIcons(gameTime);
     }
 
-    private void UpdateHeroIcons(GameTime gameTime)
+    private void UpdateUnitIcons(GameTime gameTime)
     {
-      for (int i = 0; i < _heroIcons.Count; i++)
+      for (int i = 0; i < _unitIcons.Count; i++)
       {
-        _heroIcons[i].Update(gameTime);
-        _heroIcons[i].IsSelected = false;
+        _unitIcons[i].Update(gameTime);
+        _unitIcons[i].IsSelected = false;
 
-        if (_heroIcons[i].IsClicked)
-          SelectedHeroIndex = i;
+        if (_unitIcons[i].IsClicked)
+          SelectedUnitIndex = i;
       }
 
-      _heroIcons[SelectedHeroIndex].IsSelected = true;
+      _unitIcons[SelectedUnitIndex].IsSelected = true;
     }
 
     private void UpdateAbilityIcons(GameTime gameTime)
@@ -150,7 +150,7 @@ namespace HopHop.GUI
       _controlPanel.Draw(gameTime, spriteBatch);
       _endTurnButton.Draw(gameTime, spriteBatch);
 
-      foreach (var icon in _heroIcons)
+      foreach (var icon in _unitIcons)
         icon.Draw(gameTime, spriteBatch);
 
       foreach (var icon in _abilityIcons)

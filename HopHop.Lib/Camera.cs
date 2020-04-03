@@ -27,7 +27,8 @@ namespace HopHop.Lib
 
       if (_moveTo != null)
       {
-        Position = Vector2.Lerp(Position, _moveTo.Value, _smoothTime);
+        var newPosition = Vector2.Lerp(Position, _moveTo.Value, _smoothTime);
+        Position = newPosition;
 
         if (Vector2.Distance(Position, _moveTo.Value) < 1f)
         {

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HopHop.Lib;
 
 namespace HopHop.Managers
 {
@@ -36,11 +37,13 @@ namespace HopHop.Managers
 
     public States State { get; private set; } = States.Selected;
 
+    public bool UpdateUnitIndex = false;
+
     public UnitManager(List<Unit> units, MapManager mapDrawer)
     {
       _units = units;
 
-      _mapManager = mapDrawer;      
+      _mapManager = mapDrawer;
     }
 
     public void LoadContent(ContentManager content)
@@ -60,7 +63,7 @@ namespace HopHop.Managers
 
     public void Update(GameTime gameTime, BattleGUI gui)
     {
-      _selectedUnit = _units[gui.SelectedHeroIndex];
+      _selectedUnit = _units[gui.SelectedUnitIndex];
 
       switch (State)
       {
@@ -88,13 +91,9 @@ namespace HopHop.Managers
             _selectedUnit.UpdateStamina();
             _mapManager.Refresh();
 
-            if(_selectedUnit.Stamina<=0)
-            {
-              gui.SelectedHeroIndex++;
-
-              if (gui.SelectedHeroIndex >= _units.Count)
-                gui.SelectedHeroIndex = 0;
-            }
+            if (_selectedUnit.Stamina <= 0)
+              UpdateUnitIndex = true;
+            
 
             //_selectedUnit = null;
             State = States.Selected;

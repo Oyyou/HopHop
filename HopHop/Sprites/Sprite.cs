@@ -33,6 +33,8 @@ namespace HopHop.Sprites
     {
       get
       {
+        var test = Texture.Height % Map.TileHeight;
+
         return new Rectangle((int)TilePosition.X, (int)TilePosition.Y, Texture.Width, Texture.Height - Map.TileHeight);
       }
     }

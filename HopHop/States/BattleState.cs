@@ -120,7 +120,8 @@ namespace HopHop.States
       {
         for (int x = 0; x < _mapManager.Map.GetWidth(); x++)
         {
-          _backgroundTiles.Add(new Sprites.Sprite(Content.Load<Texture2D>($"Tiles/Stone/{images[BaseGame.Random.Next(0, images.Count)]}"))
+          //_backgroundTiles.Add(new Sprites.Sprite(Content.Load<Texture2D>($"Tiles/Stone/{images[BaseGame.Random.Next(0, images.Count)]}"))
+          _backgroundTiles.Add(new Sprites.Sprite(Content.Load<Texture2D>($"Tiles/Floor"))
           {
             HasFixedLayer = true,
             Layer = 0,
@@ -159,6 +160,7 @@ namespace HopHop.States
           _units.ForEach(c =>
           {
             c.Stamina = 2;
+            c.TilesMoved = 0;
           });
         }
 
@@ -173,20 +175,21 @@ namespace HopHop.States
 
           if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Tab))
           {
-            _gui.SelectedHeroIndex++;
-
-            if (_gui.SelectedHeroIndex >= _units.Count)
-              _gui.SelectedHeroIndex = 0;
-
-            _camera.GoTo(_units[_gui.SelectedHeroIndex].TileRectangle);
+            UpdateUnitIndex();
           }
 
           _gui.Update(gameTime);
           _camera.Update(gameTime);
           _unitManager.Update(gameTime, _gui);
+          if (_unitManager.UpdateUnitIndex)
+          {
+            _unitManager.UpdateUnitIndex = false;
+            UpdateUnitIndex();
+          }
+
           _mapManager.Update(gameTime);
 
-          if (_units.All(c => c.Stamina == 0))
+          if (_units.All(c => c.Stamina <= 0))
           {
             NextState = BattleStates.EnemyTurn;
           }
@@ -209,12 +212,37 @@ namespace HopHop.States
       }
     }
 
+    private void UpdateUnitIndex()
+    {
+      _gui.SelectedUnitIndex++;
+
+      if (_gui.SelectedUnitIndex >= _units.Count)
+        _gui.SelectedUnitIndex = 0;
+
+      for (int i = 0; i < _units.Count; i++)
+      {
+        if (_units[_gui.SelectedUnitIndex].Stamina > 0)
+          break;
+
+        _gui.SelectedUnitIndex++;
+      }
+
+      if (_gui.SelectedUnitIndex < _units.Count)
+      {
+        _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+      }
+      else
+      {
+        _gui.SelectedUnitIndex = 0;
+      }
+    }
+
     public override void Draw(GameTime gameTime)
     {
       SpriteBatch.Begin(SpriteSortMode.FrontToBack, transformMatrix: _camera.Transform);
 
-      //foreach (var tile in _backgroundTiles)
-      //  tile.Draw(gameTime, SpriteBatch);
+      foreach (var tile in _backgroundTiles)
+        tile.Draw(gameTime, SpriteBatch);
 
       _mapManager.Draw(gameTime, SpriteBatch);
       _unitManager.Draw(gameTime, SpriteBatch);
