@@ -29,5 +29,22 @@ namespace HopHop.Lib.Models
     {
       Id = _ids++;
     }
+
+    public override bool Equals(object obj)
+    {
+      return this.Id == ((UnitModel)obj).Id;
+    }
+
+    public override int GetHashCode()
+    {
+      var hashCode = 806287619;
+      hashCode = hashCode * -1521134295 + Id.GetHashCode();
+      hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+      hashCode = hashCode * -1521134295 + Speed.GetHashCode();
+      hashCode = hashCode * -1521134295 + Health.GetHashCode();
+      hashCode = hashCode * -1521134295 + Armour.GetHashCode();
+      hashCode = hashCode * -1521134295 + EqualityComparer<AbilitiesModel>.Default.GetHashCode(Abilities);
+      return hashCode;
+    }
   }
 }

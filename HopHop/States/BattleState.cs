@@ -90,14 +90,35 @@ namespace HopHop.States
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
         {
           TilePosition = Map.PointToVector2(7, 7),
+          UnitModel = new Lib.Models.UnitModel()
+          {
+            Armour = 0,
+            Health = 5,
+            Speed = 2,
+            Name = "Stu",
+          },
         },
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
         {
           TilePosition = Map.PointToVector2(3, 7),
+          UnitModel = new Lib.Models.UnitModel()
+          {
+            Armour = 0,
+            Health = 5,
+            Speed = 2,
+            Name = "Frank",
+          },
         },
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
         {
           TilePosition = Map.PointToVector2(9, 6),
+          UnitModel = new Lib.Models.UnitModel()
+          {
+            Armour = 0,
+            Health = 5,
+            Speed = 2,
+            Name = "Jim",
+          },
         },
       };
 
@@ -151,6 +172,7 @@ namespace HopHop.States
       _gui = new BattleGUI(_gameModel, _units.Select(c => c.UnitModel).ToList());
       _gui.OnUnitChanged = SelectUnit;
       _gui.OnAbilityChanged = SetTargets;
+      _gui.OnTargetChanged = SelectTarget;
 
       _camera = new Camera()
       {
@@ -190,9 +212,11 @@ namespace HopHop.States
 
           CheckInput();
 
-          _gui.Update(gameTime);
-          if(_unitManager.State == UnitManager.States.Moving)
+          _gui.Update(gameTime, _targets.Select(c => c.UnitModel).ToList());
+
+          if (_unitManager.State == UnitManager.States.Moving)
             _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+
           _camera.Update(gameTime);
           _unitManager.Update(gameTime, _gui, (_selectedTargetIndex > -1 && _selectedTargetIndex < _targets.Count) ? _targets[_selectedTargetIndex] : null);
           if (_unitManager.UpdateUnitIndex)
@@ -271,6 +295,7 @@ namespace HopHop.States
         {
           _abilitySelected = false;
           _gui.SelectedAbilityIndex = -1;
+          _gui.SelectedTargetIndex = -1;
           _targets = new List<Unit>();
           return;
         }
@@ -443,6 +468,13 @@ namespace HopHop.States
       _abilitySelected = false;
       _selectedTargetIndex = -1;
       _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+    }
+
+    private void SelectTarget()
+    {
+      _selectedTargetIndex = _gui.SelectedTargetIndex;
+
+      _camera.GoTo(_targets[_gui.SelectedTargetIndex].TileRectangle);
     }
 
     private void SelectNextUnit()

@@ -11,11 +11,11 @@ namespace HopHop.GUI
   /// <summary>
   /// This is the main type for your game.
   /// </summary>
-  public class Game1 : BaseGame
+  public class GUIGame1 : BaseGame
   {
     private BattleGUI _battleGUI;
 
-    public Game1()
+    public GUIGame1()
     {
       _graphics = new GraphicsDeviceManager(this);
       Content.RootDirectory = "Content";
@@ -74,7 +74,7 @@ namespace HopHop.GUI
       GameMouse.Update();
       GameKeyboard.Update();
 
-      _battleGUI.Update(gameTime);
+      _battleGUI.Update(gameTime, new System.Collections.Generic.List<Lib.Models.UnitModel>());
 
       base.Update(gameTime);
     }

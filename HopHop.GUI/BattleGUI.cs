@@ -26,15 +26,19 @@ namespace HopHop.GUI
 
     private List<Button> _abilityIcons;
 
+    private List<Button> _targetIcons;
+
     public BattleStates State;
 
     public BattleStates NextState;
 
     private Dictionary<int, List<Texture2D>> _abilityIconTextures = new Dictionary<int, List<Texture2D>>();
+    private Dictionary<string, Texture2D> _targetIconTextures = new Dictionary<string, Texture2D>();
     private Texture2D _abilityIconClickedTexture;
 
     public int SelectedUnitIndex = 0;
     public int SelectedAbilityIndex = -1;
+    public int SelectedTargetIndex = -1;
 
     private UnitModel _previousUnit;
     private UnitModel _currentUnit;
@@ -45,9 +49,12 @@ namespace HopHop.GUI
 
     public Action OnAbilityChanged { get; set; }
 
+    public Action OnTargetChanged { get; set; }
+
     public BattleGUI(GameModel gameModel, List<UnitModel> units)
     {
       _units = units;
+
       SelectedUnitId = _units.First().Id;
 
       var content = gameModel.Content;
@@ -79,6 +86,8 @@ namespace HopHop.GUI
           _abilityIconTextures[unit.Id].Add(content.Load<Texture2D>("GUI/Battle/AbilityIcons/" + ability.IconName));
         }
       }
+
+      _targetIconTextures.Add("Enemy", content.Load<Texture2D>("GUI/Battle/TargetIcons/Enemy"));
 
       _abilityIconClickedTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon_Clicked");
 
@@ -120,10 +129,34 @@ namespace HopHop.GUI
 
         x += texture.Width + 2;
       }
+
+      _targetIcons = new List<Button>();
     }
 
-    public void Update(GameTime gameTime)
+    private List<UnitModel> _previousTargets = new List<UnitModel>();
+
+    public void Update(GameTime gameTime, List<UnitModel> targets)
     {
+      if (_previousTargets.Count != targets.Count || !_previousTargets.All(c => targets.Contains(c)))
+      {
+        _previousTargets = targets;
+        _targetIcons = new List<Button>();
+
+        var x = _abilityIcons.First().Position.X;
+        var y = _controlPanel.Position.Y - 55;
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+          var target = targets[i];
+
+          var texture = _targetIconTextures["Enemy"];
+
+          _targetIcons.Add(new Button(texture, _abilityIconClickedTexture) { Position = new Vector2(x, y), HoverColour = Color.Red });
+
+          x += texture.Width + 2;
+        }
+      }
+
       UpdateUnit(_units[SelectedUnitIndex]);
 
       _endTurnButton.Update(gameTime);
@@ -134,6 +167,8 @@ namespace HopHop.GUI
       UpdateUnitIcons(gameTime);
 
       UpdateAbilityIcons(gameTime);
+
+      UpdateTargetIcons(gameTime);
     }
 
     private void UpdateUnitIcons(GameTime gameTime)
@@ -171,6 +206,24 @@ namespace HopHop.GUI
         _abilityIcons[SelectedAbilityIndex].IsSelected = true;
     }
 
+    private void UpdateTargetIcons(GameTime gameTime)
+    {
+      for (int i = 0; i < _targetIcons.Count; i++)
+      {
+        _targetIcons[i].Update(gameTime);
+        _targetIcons[i].IsSelected = false;
+
+        if (_targetIcons[i].IsClicked)
+        {
+          SelectedTargetIndex = i;
+          OnTargetChanged?.Invoke();
+        }
+      }
+
+      if (SelectedTargetIndex > -1)
+        _targetIcons[SelectedTargetIndex].IsSelected = true;
+    }
+
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
       spriteBatch.Begin();
@@ -182,6 +235,9 @@ namespace HopHop.GUI
         icon.Draw(gameTime, spriteBatch);
 
       foreach (var icon in _abilityIcons)
+        icon.Draw(gameTime, spriteBatch);
+
+      foreach (var icon in _targetIcons)
         icon.Draw(gameTime, spriteBatch);
 
       spriteBatch.End();

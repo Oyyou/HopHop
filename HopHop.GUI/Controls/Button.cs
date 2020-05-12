@@ -58,6 +58,8 @@ namespace HopHop.GUI.Controls
       }
     }
 
+    public Color HoverColour { get; set; } = Color.Yellow;
+
     public Button(Texture2D texture)
     {
       _texture = texture;
@@ -93,7 +95,7 @@ namespace HopHop.GUI.Controls
 
       if (IsHovering)
       {
-        _colour = Color.Yellow;
+        _colour = HoverColour;
 
         if (IsClicked)
         {
