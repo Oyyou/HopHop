@@ -41,6 +41,10 @@ namespace HopHop.GUI
 
     public int SelectedUnitId { get; set; }
 
+    public Action OnUnitChanged { get; set; }
+
+    public Action OnAbilityChanged { get; set; }
+
     public BattleGUI(GameModel gameModel, List<UnitModel> units)
     {
       _units = units;
@@ -140,7 +144,10 @@ namespace HopHop.GUI
         _unitIcons[i].IsSelected = false;
 
         if (_unitIcons[i].IsClicked)
+        {
           SelectedUnitIndex = i;
+          OnUnitChanged?.Invoke();
+        }
       }
 
       _unitIcons[SelectedUnitIndex].IsSelected = true;
@@ -154,7 +161,10 @@ namespace HopHop.GUI
         _abilityIcons[i].IsSelected = false;
 
         if (_abilityIcons[i].IsClicked)
+        {
           SelectedAbilityIndex = i;
+          OnAbilityChanged?.Invoke();
+        }
       }
 
       if (SelectedAbilityIndex > -1)

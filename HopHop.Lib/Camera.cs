@@ -23,7 +23,7 @@ namespace HopHop.Lib
 
     public void Update(GameTime gameTime)
     {
-      var speed = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 5;
+      var speed = (float)gameTime.ElapsedGameTime.TotalMilliseconds / 2.5f;
 
       if (_moveTo != null)
       {

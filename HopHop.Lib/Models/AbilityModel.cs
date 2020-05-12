@@ -13,21 +13,37 @@ namespace HopHop.Lib.Models
       Enemies,
       Friendlies,
       Self,
+      All,
+    }
+
+    public enum AbilityTypes
+    {
+      Close,
+      Ranged,
+      Self,
     }
 
     public readonly string IconName;
 
     public readonly string Text;
 
+    public readonly int StaminaCost;
+
     public readonly TargetTypes TargetType;
 
-    public AbilityModel(string text, string iconName, TargetTypes targetType)
+    public readonly AbilityTypes AbilityType;
+
+    public AbilityModel(string text, string iconName, int staminaCost, TargetTypes targetType, AbilityTypes abilityType)
     {
       Text = text;
+
+      StaminaCost = staminaCost;
 
       IconName = iconName;
 
       TargetType = targetType;
+
+      AbilityType = abilityType;
     }
   }
 }

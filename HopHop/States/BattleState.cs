@@ -149,6 +149,8 @@ namespace HopHop.States
       _unitManager.LoadContent(Content);
 
       _gui = new BattleGUI(_gameModel, _units.Select(c => c.UnitModel).ToList());
+      _gui.OnUnitChanged = SelectUnit;
+      _gui.OnAbilityChanged = SetTargets;
 
       _camera = new Camera()
       {
@@ -189,6 +191,8 @@ namespace HopHop.States
           CheckInput();
 
           _gui.Update(gameTime);
+          if(_unitManager.State == UnitManager.States.Moving)
+            _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
           _camera.Update(gameTime);
           _unitManager.Update(gameTime, _gui, (_selectedTargetIndex > -1 && _selectedTargetIndex < _targets.Count) ? _targets[_selectedTargetIndex] : null);
           if (_unitManager.UpdateUnitIndex)
@@ -199,7 +203,7 @@ namespace HopHop.States
 
           _mapManager.Update(gameTime);
 
-          if (_units.All(c => c.Stamina <= 0))
+          if (_units.All(c => c.Stamina <= 0) && _unitManager.State == UnitManager.States.Selected)
           {
             NextState = BattleStates.EnemyTurn;
           }
@@ -258,26 +262,7 @@ namespace HopHop.States
 
         if (_abilitySelected)
         {
-          var unit = _units[_gui.SelectedUnitIndex];
-          var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
-
-          switch (ability.TargetType)
-          {
-            case Lib.Models.AbilityModel.TargetTypes.Enemies:
-              _targets = _enemies;
-              break;
-            case Lib.Models.AbilityModel.TargetTypes.Friendlies:
-              _targets = _units;
-              break;
-            case Lib.Models.AbilityModel.TargetTypes.Self:
-              _targets = new List<Unit>() { unit };
-              break;
-            default:
-              break;
-          }
-
-          _selectedTargetIndex = 0;
-          SelectNextTarget();
+          SetTargets();
         }
       }
       else // If we've got an ability selected
@@ -292,7 +277,7 @@ namespace HopHop.States
 
         if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Tab))
         {
-            SelectNextTarget();
+          SelectNextTarget();
         }
         else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.LeftShift))
         {
@@ -318,10 +303,22 @@ namespace HopHop.States
           newAbilityIndex = 3;
         }
 
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Space) ||
+            BaseGame.GameKeyboard.IsKeyPressed(Keys.Enter))
+        {
+          newAbilityIndex = _gui.SelectedAbilityIndex;
+        }
+
         // Cast ability
         if (newAbilityIndex == _gui.SelectedAbilityIndex)
         {
+          var unit = _units[_gui.SelectedUnitIndex];
 
+          unit.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
+
+          _unitManager.State = UnitManager.States.Moving;
+          _abilitySelected = false;
+          _selectedTargetIndex = -1;
         }
         else
         {
@@ -329,29 +326,123 @@ namespace HopHop.States
           {
             _gui.SelectedAbilityIndex = newAbilityIndex;
 
-            var unit = _units[_gui.SelectedUnitIndex];
-            var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
-
-            switch (ability.TargetType)
-            {
-              case Lib.Models.AbilityModel.TargetTypes.Enemies:
-                _targets = _enemies;
-                break;
-              case Lib.Models.AbilityModel.TargetTypes.Friendlies:
-                _targets = _units;
-                break;
-              case Lib.Models.AbilityModel.TargetTypes.Self:
-                _targets = new List<Unit>() { unit };
-                break;
-              default:
-                break;
-            }
-
-            _selectedTargetIndex = 0;
-            SelectNextTarget();
+            SetTargets();
           }
         }
       }
+    }
+
+    private void SetTargets()
+    {
+      _abilitySelected = true;
+
+      var unit = _units[_gui.SelectedUnitIndex];
+      var unitDistance = unit.Stamina * unit.UnitModel.Speed;
+      var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
+
+      _targets = new List<Unit>();
+
+      var unitPoint = Map.Vector2ToPoint(unit.TilePosition);
+
+      Action<List<Unit>> setCloseTargets = (units) =>
+      {
+        var tempUnits = new List<Tuple<int, Unit>>();
+
+        foreach (var u in units)
+        {
+          var uPoint = Map.Vector2ToPoint(u.TilePosition);
+
+          var uPoints = new List<Point>()
+          {
+            uPoint + new Point(0, -1),   // Top
+            uPoint + new Point(1, -1),   // Top-Right
+            uPoint + new Point(1, 0),    // Right
+            uPoint + new Point(1, 1),    // Bottom-Right
+            uPoint + new Point(0, 1),    // Bottom
+            uPoint + new Point(-1, 1),   // Bottom-Left
+            uPoint + new Point(-1, 0),   // Left
+            uPoint + new Point(-1, -1),  // Top-Left
+          };
+
+          int distance = unitDistance;
+          bool isValid = false;
+          foreach (var p in uPoints)
+          {
+            var result = PathFinder.Find(_mapManager.Map.Get(), unitPoint, p);
+
+            if (result.Status == PathStatus.Valid)
+            {
+              if (result.Path.Count <= distance)
+              {
+                distance = result.Path.Count;
+                isValid = true;
+              }
+            }
+          }
+
+          if (isValid)
+            tempUnits.Add(new Tuple<int, Unit>(distance, u));
+        }
+
+        _targets.AddRange(tempUnits.OrderBy(c => c.Item1).Select(c => c.Item2));
+      };
+
+      Action<List<Unit>> setRangedTargets = (units) =>
+      {
+        foreach (var u in units)
+        {
+          // if the player 'can see' the unit
+          //  then add the unit
+        }
+      };
+
+      switch (ability.AbilityType)
+      {
+        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
+          setCloseTargets(_enemies);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
+          setCloseTargets(_units);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
+          setCloseTargets(_enemies);
+          setCloseTargets(_units);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
+          setRangedTargets(_enemies);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
+          setRangedTargets(_units);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
+          setRangedTargets(_enemies);
+          setRangedTargets(_units);
+          break;
+
+        case Lib.Models.AbilityModel.AbilityTypes.Self:
+
+          _targets.Add(unit);
+          break;
+
+        default:
+          throw new Exception($"Unexpected ability/target combonation: {ability.AbilityType}/{ability.TargetType}");
+      }
+
+
+      _selectedTargetIndex = -1;
+      SelectNextTarget();
+    }
+
+    private void SelectUnit()
+    {
+      _abilitySelected = false;
+      _selectedTargetIndex = -1;
+      _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
     }
 
     private void SelectNextUnit()
@@ -420,9 +511,6 @@ namespace HopHop.States
 
       for (int i = 0; i < _targets.Count; i++)
       {
-        if (_targets[_selectedTargetIndex].Stamina > 0)
-          break;
-
         _selectedTargetIndex++;
 
         if (_selectedTargetIndex >= _targets.Count)
@@ -441,6 +529,27 @@ namespace HopHop.States
 
     private void SelectPreviousTarget()
     {
+      _selectedTargetIndex--;
+
+      if (_selectedTargetIndex < 0)
+        _selectedTargetIndex = _targets.Count - 1;
+
+      for (int i = _targets.Count - 1; i > -1; i--)
+      {
+        _selectedTargetIndex--;
+
+        if (_selectedTargetIndex < 0)
+          _selectedTargetIndex = _targets.Count - 1;
+      }
+
+      if (_selectedTargetIndex < _targets.Count)
+      {
+        _camera.GoTo(_targets[_selectedTargetIndex].TileRectangle);
+      }
+      else
+      {
+        _selectedTargetIndex = 0;
+      }
 
     }
 

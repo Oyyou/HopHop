@@ -39,7 +39,7 @@ namespace HopHop.Managers
 
     private UnitPointer _unitPointer;
 
-    public States State { get; private set; } = States.Selected;
+    public States State { get; set; } = States.Selected;
 
     public bool UpdateUnitIndex = false;
 
@@ -168,7 +168,7 @@ namespace HopHop.Managers
         {
           var result = PathFinder.Find(_mapManager.Map.Get(), mapPoint, p);
 
-          if (result.Errors == null)
+          if (result.Status == PathStatus.Valid)
           {
             if (result.Path.Count < length)
             {
