@@ -13,6 +13,7 @@ using HopHop.Units;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static HopHop.Lib.Enums;
+using Microsoft.Xna.Framework.Input;
 
 namespace HopHop.States
 {
@@ -26,7 +27,9 @@ namespace HopHop.States
 
     private readonly List<Unit> _units;
 
-    private List<Enemy> _enemies;
+    private List<Unit> _targets = new List<Unit>();
+
+    private List<Unit> _enemies;
 
     private List<Sprites.Sprite> _walls;
 
@@ -56,6 +59,8 @@ namespace HopHop.States
       }
     }
 
+    private bool _abilitySelected = false;
+
     public BattleState(GameModel gameModel, List<Unit> units)
       : base(gameModel)
     {
@@ -80,11 +85,19 @@ namespace HopHop.States
         },
       };
 
-      _enemies = new List<Enemy>()
+      _enemies = new List<Unit>()
       {
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
         {
           TilePosition = Map.PointToVector2(7, 7),
+        },
+        new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
+        {
+          TilePosition = Map.PointToVector2(3, 7),
+        },
+        new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
+        {
+          TilePosition = Map.PointToVector2(9, 6),
         },
       };
 
@@ -173,18 +186,15 @@ namespace HopHop.States
       {
         case BattleStates.PlayerTurn:
 
-          if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Tab))
-          {
-            UpdateUnitIndex();
-          }
+          CheckInput();
 
           _gui.Update(gameTime);
           _camera.Update(gameTime);
-          _unitManager.Update(gameTime, _gui);
+          _unitManager.Update(gameTime, _gui, (_selectedTargetIndex > -1 && _selectedTargetIndex < _targets.Count) ? _targets[_selectedTargetIndex] : null);
           if (_unitManager.UpdateUnitIndex)
           {
             _unitManager.UpdateUnitIndex = false;
-            UpdateUnitIndex();
+            SelectNextUnit();
           }
 
           _mapManager.Update(gameTime);
@@ -212,7 +222,139 @@ namespace HopHop.States
       }
     }
 
-    private void UpdateUnitIndex()
+    private void CheckInput()
+    {
+      if (!_abilitySelected)
+      {
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Tab))
+        {
+          SelectNextUnit();
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.LeftShift))
+        {
+          SelectPreviousUnit();
+        }
+
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D1))
+        {
+          _gui.SelectedAbilityIndex = 0;
+          _abilitySelected = true;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D2))
+        {
+          _gui.SelectedAbilityIndex = 1;
+          _abilitySelected = true;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D3))
+        {
+          _gui.SelectedAbilityIndex = 2;
+          _abilitySelected = true;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D4))
+        {
+          _gui.SelectedAbilityIndex = 3;
+          _abilitySelected = true;
+        }
+
+        if (_abilitySelected)
+        {
+          var unit = _units[_gui.SelectedUnitIndex];
+          var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
+
+          switch (ability.TargetType)
+          {
+            case Lib.Models.AbilityModel.TargetTypes.Enemies:
+              _targets = _enemies;
+              break;
+            case Lib.Models.AbilityModel.TargetTypes.Friendlies:
+              _targets = _units;
+              break;
+            case Lib.Models.AbilityModel.TargetTypes.Self:
+              _targets = new List<Unit>() { unit };
+              break;
+            default:
+              break;
+          }
+
+          _selectedTargetIndex = 0;
+          SelectNextTarget();
+        }
+      }
+      else // If we've got an ability selected
+      {
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Escape))
+        {
+          _abilitySelected = false;
+          _gui.SelectedAbilityIndex = -1;
+          _targets = new List<Unit>();
+          return;
+        }
+
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Tab))
+        {
+            SelectNextTarget();
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.LeftShift))
+        {
+          SelectPreviousTarget();
+        }
+
+        var newAbilityIndex = -1;
+
+        if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D1))
+        {
+          newAbilityIndex = 0;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D2))
+        {
+          newAbilityIndex = 1;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D3))
+        {
+          newAbilityIndex = 2;
+        }
+        else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D4))
+        {
+          newAbilityIndex = 3;
+        }
+
+        // Cast ability
+        if (newAbilityIndex == _gui.SelectedAbilityIndex)
+        {
+
+        }
+        else
+        {
+          if (newAbilityIndex > -1)
+          {
+            _gui.SelectedAbilityIndex = newAbilityIndex;
+
+            var unit = _units[_gui.SelectedUnitIndex];
+            var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
+
+            switch (ability.TargetType)
+            {
+              case Lib.Models.AbilityModel.TargetTypes.Enemies:
+                _targets = _enemies;
+                break;
+              case Lib.Models.AbilityModel.TargetTypes.Friendlies:
+                _targets = _units;
+                break;
+              case Lib.Models.AbilityModel.TargetTypes.Self:
+                _targets = new List<Unit>() { unit };
+                break;
+              default:
+                break;
+            }
+
+            _selectedTargetIndex = 0;
+            SelectNextTarget();
+          }
+        }
+      }
+    }
+
+    private void SelectNextUnit()
     {
       _gui.SelectedUnitIndex++;
 
@@ -225,6 +367,9 @@ namespace HopHop.States
           break;
 
         _gui.SelectedUnitIndex++;
+
+        if (_gui.SelectedUnitIndex >= _units.Count)
+          _gui.SelectedUnitIndex = 0;
       }
 
       if (_gui.SelectedUnitIndex < _units.Count)
@@ -235,6 +380,68 @@ namespace HopHop.States
       {
         _gui.SelectedUnitIndex = 0;
       }
+    }
+
+    private void SelectPreviousUnit()
+    {
+      _gui.SelectedUnitIndex--;
+
+      if (_gui.SelectedUnitIndex < 0)
+        _gui.SelectedUnitIndex = _units.Count - 1;
+
+      for (int i = _units.Count - 1; i > -1; i--)
+      {
+        if (_units[_gui.SelectedUnitIndex].Stamina > 0)
+          break;
+
+        _gui.SelectedUnitIndex--;
+
+        if (_gui.SelectedUnitIndex < 0)
+          _gui.SelectedUnitIndex = _units.Count - 1;
+      }
+
+      if (_gui.SelectedUnitIndex < _units.Count)
+      {
+        _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+      }
+      else
+      {
+        _gui.SelectedUnitIndex = 0;
+      }
+    }
+
+    private int _selectedTargetIndex = -1;
+    private void SelectNextTarget()
+    {
+      _selectedTargetIndex++;
+
+      if (_selectedTargetIndex >= _targets.Count)
+        _selectedTargetIndex = 0;
+
+      for (int i = 0; i < _targets.Count; i++)
+      {
+        if (_targets[_selectedTargetIndex].Stamina > 0)
+          break;
+
+        _selectedTargetIndex++;
+
+        if (_selectedTargetIndex >= _targets.Count)
+          _selectedTargetIndex = 0;
+      }
+
+      if (_selectedTargetIndex < _targets.Count)
+      {
+        _camera.GoTo(_targets[_selectedTargetIndex].TileRectangle);
+      }
+      else
+      {
+        _selectedTargetIndex = 0;
+      }
+    }
+
+    private void SelectPreviousTarget()
+    {
+
     }
 
     public override void Draw(GameTime gameTime)

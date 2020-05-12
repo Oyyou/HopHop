@@ -75,10 +75,10 @@ namespace HopHop
             Speed = 5,
             Abilities = new AbilitiesModel()
             {
-              Ability1 = new AbilityModel("Ability 1", ""),
-              Ability2 = new AbilityModel("Ability 2", ""),
-              Ability3 = new AbilityModel("Ability 3", ""),
-              Ability4 = new AbilityModel("Ability 4", ""),
+              Ability1 = new AbilityModel("Ability 1", "Slash", AbilityModel.TargetTypes.Enemies),
+              Ability2 = new AbilityModel("Ability 2", "Heal", AbilityModel.TargetTypes.Friendlies),
+              Ability3 = new AbilityModel("Ability 3", "Sling", AbilityModel.TargetTypes.Enemies),
+              Ability4 = new AbilityModel("Ability 4", "Meditate", AbilityModel.TargetTypes.Self),
             }
           },
           Layer = 0.6f,
@@ -93,10 +93,10 @@ namespace HopHop
             Speed = 5,
             Abilities = new AbilitiesModel()
             {
-              Ability1 = new AbilityModel("Ability 1", ""),
-              Ability2 = new AbilityModel("Ability 2", ""),
-              Ability3 = new AbilityModel("Ability 3", ""),
-              Ability4 = new AbilityModel("Ability 4", ""),
+              Ability1 = new AbilityModel("Ability 1", "Slash", AbilityModel.TargetTypes.Enemies),
+              Ability2 = new AbilityModel("Ability 2", "Heal", AbilityModel.TargetTypes.Friendlies),
+              Ability3 = new AbilityModel("Ability 3", "Sling", AbilityModel.TargetTypes.Enemies),
+              Ability4 = new AbilityModel("Ability 4", "Meditate", AbilityModel.TargetTypes.Self),
             }
           },
           Layer = 0.6f,
@@ -111,10 +111,10 @@ namespace HopHop
             Speed = 5,
             Abilities = new AbilitiesModel()
             {
-              Ability1 = new AbilityModel("Ability 1", ""),
-              Ability2 = new AbilityModel("Ability 2", ""),
-              Ability3 = new AbilityModel("Ability 3", ""),
-              Ability4 = new AbilityModel("Ability 4", ""),
+              Ability1 = new AbilityModel("Ability 1", "Slash", AbilityModel.TargetTypes.Enemies),
+              Ability2 = new AbilityModel("Ability 2", "Heal", AbilityModel.TargetTypes.Friendlies),
+              Ability3 = new AbilityModel("Ability 3", "Sling", AbilityModel.TargetTypes.Enemies),
+              Ability4 = new AbilityModel("Ability 4", "Meditate", AbilityModel.TargetTypes.Self),
             }
           },
           Layer = 0.6f,
@@ -129,10 +129,10 @@ namespace HopHop
             Speed = 5,
             Abilities = new AbilitiesModel()
             {
-              Ability1 = new AbilityModel("Ability 1", ""),
-              Ability2 = new AbilityModel("Ability 2", ""),
-              Ability3 = new AbilityModel("Ability 3", ""),
-              Ability4 = new AbilityModel("Ability 4", ""),
+              Ability1 = new AbilityModel("Ability 1", "Slash", AbilityModel.TargetTypes.Enemies),
+              Ability2 = new AbilityModel("Ability 2", "Heal", AbilityModel.TargetTypes.Friendlies),
+              Ability3 = new AbilityModel("Ability 3", "Sling", AbilityModel.TargetTypes.Enemies),
+              Ability4 = new AbilityModel("Ability 4", "Meditate", AbilityModel.TargetTypes.Self),
             }
           },
           Layer = 0.6f,

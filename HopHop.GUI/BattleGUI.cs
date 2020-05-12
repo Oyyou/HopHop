@@ -30,11 +30,11 @@ namespace HopHop.GUI
 
     public BattleStates NextState;
 
-    private Texture2D _abilityIconTexture;
+    private Dictionary<int, List<Texture2D>> _abilityIconTextures = new Dictionary<int, List<Texture2D>>();
     private Texture2D _abilityIconClickedTexture;
 
     public int SelectedUnitIndex = 0;
-    private int _selectedAbilityIndex = -1;
+    public int SelectedAbilityIndex = -1;
 
     private UnitModel _previousUnit;
     private UnitModel _currentUnit;
@@ -64,7 +64,18 @@ namespace HopHop.GUI
 
       var unitIconTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon");
       var unitIconClickedTexture = content.Load<Texture2D>("GUI/Battle/HeroIcon_Clicked");
-      _abilityIconTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon");
+
+      foreach (var unit in units)
+      {
+        foreach (var ability in unit.Abilities.Get())
+        {
+          if (!_abilityIconTextures.ContainsKey(unit.Id))
+            _abilityIconTextures.Add(unit.Id, new List<Texture2D>());
+
+          _abilityIconTextures[unit.Id].Add(content.Load<Texture2D>("GUI/Battle/AbilityIcons/" + ability.IconName));
+        }
+      }
+
       _abilityIconClickedTexture = content.Load<Texture2D>("GUI/Battle/AbilityIcon_Clicked");
 
       _unitIcons = new List<Button>();
@@ -87,16 +98,23 @@ namespace HopHop.GUI
       if (_previousUnit == _currentUnit)
         return;
 
-      _selectedAbilityIndex = -1;
+      SelectedAbilityIndex = -1;
 
       _abilityIcons = new List<Button>();
 
       var x = _controlPanel.Position.X + 300;
       var y = _controlPanel.Position.Y + 36;
-      foreach (var ability in _currentUnit.Abilities.Get())
+      var abilities = _currentUnit.Abilities.Get().ToList();
+      for (int i = 0; i < 4; i++)
       {
-        _abilityIcons.Add(new Button(_abilityIconTexture, _abilityIconClickedTexture) { Position = new Vector2(x, y), });
-        x += _abilityIconTexture.Width + 2;
+        var ability = abilities[i];
+
+        var texture = _abilityIconTextures[newUnit.Id][i];
+
+        if (ability != null)
+          _abilityIcons.Add(new Button(texture, _abilityIconClickedTexture) { Position = new Vector2(x, y), });
+
+        x += texture.Width + 2;
       }
     }
 
@@ -136,11 +154,11 @@ namespace HopHop.GUI
         _abilityIcons[i].IsSelected = false;
 
         if (_abilityIcons[i].IsClicked)
-          _selectedAbilityIndex = i;
+          SelectedAbilityIndex = i;
       }
 
-      if (_selectedAbilityIndex > -1)
-        _abilityIcons[_selectedAbilityIndex].IsSelected = true;
+      if (SelectedAbilityIndex > -1)
+        _abilityIcons[SelectedAbilityIndex].IsSelected = true;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

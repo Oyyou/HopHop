@@ -37,8 +37,8 @@ namespace HopHop.Lib
       }
       else
       {
-        if (BaseGame.GameKeyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift))
-          speed *= 2.0f;
+        //if (BaseGame.GameKeyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftShift))
+        //  speed *= 2.0f;
 
         if (BaseGame.GameKeyboard.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.D))
           Position.X += speed;

@@ -20,7 +20,7 @@ namespace HopHop.Lib.Models
     /// Get the abilities for this actor
     /// </summary>
     /// <returns>A list of all the abilities</returns>
-    public List<AbilityModel> Get()
+    public IEnumerable<AbilityModel> Get()
     {
       return new List<AbilityModel>()
       {
@@ -29,6 +29,11 @@ namespace HopHop.Lib.Models
         Ability3,
         Ability4,
       };
+    }
+
+    public AbilityModel Get(int index)
+    {
+      return this.Get().ToList()[index];
     }
   }
 }
