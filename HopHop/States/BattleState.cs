@@ -96,6 +96,7 @@ namespace HopHop.States
             Health = 5,
             Speed = 2,
             Name = "Stu",
+            UnitType = Lib.Models.UnitModel.UnitTypes.Enemy,
           },
         },
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
@@ -107,6 +108,7 @@ namespace HopHop.States
             Health = 5,
             Speed = 2,
             Name = "Frank",
+            UnitType = Lib.Models.UnitModel.UnitTypes.Enemy,
           },
         },
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
@@ -118,6 +120,7 @@ namespace HopHop.States
             Health = 5,
             Speed = 2,
             Name = "Jim",
+            UnitType = Lib.Models.UnitModel.UnitTypes.Enemy,
           },
         },
       };
@@ -170,9 +173,9 @@ namespace HopHop.States
       _unitManager.LoadContent(Content);
 
       _gui = new BattleGUI(_gameModel, _units.Select(c => c.UnitModel).ToList());
-      _gui.OnUnitChanged = SelectUnit;
-      _gui.OnAbilityChanged = SetTargets;
-      _gui.OnTargetChanged = SelectTarget;
+      _gui.UnitsGroup.OnButtonChange = OnUnitSelect;
+      _gui.AbilitiesGroup.OnButtonChange = OnAbilitySelect;
+      _gui.TargetsGroup.OnButtonChange = OnTargetSelect;
 
       _camera = new Camera()
       {
@@ -217,12 +220,27 @@ namespace HopHop.States
           if (_unitManager.State == UnitManager.States.Moving)
             _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
 
+          var selectedTargetIndex = _gui.TargetsGroup.CurrentIndex;
+
           _camera.Update(gameTime);
-          _unitManager.Update(gameTime, _gui, (_selectedTargetIndex > -1 && _selectedTargetIndex < _targets.Count) ? _targets[_selectedTargetIndex] : null);
+          _unitManager.Update(gameTime, _gui, (selectedTargetIndex > -1 && selectedTargetIndex < _targets.Count) ? _targets[selectedTargetIndex] : null);
+
+          foreach (var unit in _units)
+            unit.Update(gameTime);
+
+          foreach (var unit in _enemies)
+            unit.Update(gameTime);
+
+          if (_gui.HoveringTargetIndex > -1)
+            _targets[_gui.HoveringTargetIndex].Colour = Color.Red;
+
           if (_unitManager.UpdateUnitIndex)
           {
             _unitManager.UpdateUnitIndex = false;
-            SelectNextUnit();
+
+            _gui.UnitsGroup.Increment();
+            _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+
           }
 
           _mapManager.Update(gameTime);
@@ -256,11 +274,14 @@ namespace HopHop.States
       {
         if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Tab))
         {
-          SelectNextUnit();
+          _gui.UnitsGroup.Increment();
+          _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
+
         }
         else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.LeftShift))
         {
-          SelectPreviousUnit();
+          _gui.UnitsGroup.Decrement();
+          _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
         }
 
         if (BaseGame.GameKeyboard.IsKeyPressed(Keys.D1))
@@ -286,7 +307,7 @@ namespace HopHop.States
 
         if (_abilitySelected)
         {
-          SetTargets();
+          OnAbilitySelect();
         }
       }
       else // If we've got an ability selected
@@ -302,11 +323,13 @@ namespace HopHop.States
 
         if (BaseGame.GameKeyboard.IsKeyPressed(Keys.Tab))
         {
-          SelectNextTarget();
+          _gui.TargetsGroup.Increment();
+          _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
         }
         else if (BaseGame.GameKeyboard.IsKeyPressed(Keys.LeftShift))
         {
-          SelectPreviousTarget();
+          _gui.TargetsGroup.Decrement();
+          _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
         }
 
         var newAbilityIndex = -1;
@@ -342,8 +365,10 @@ namespace HopHop.States
           unit.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
 
           _unitManager.State = UnitManager.States.Moving;
+          _targets = new List<Unit>();
           _abilitySelected = false;
-          _selectedTargetIndex = -1;
+          _gui.TargetsGroup.CurrentIndex = -1;
+          //_gui.HoveringTargetIndex = -1;
         }
         else
         {
@@ -351,13 +376,13 @@ namespace HopHop.States
           {
             _gui.SelectedAbilityIndex = newAbilityIndex;
 
-            SetTargets();
+            OnAbilitySelect();
           }
         }
       }
     }
 
-    private void SetTargets()
+    private void OnAbilitySelect()
     {
       _abilitySelected = true;
 
@@ -458,131 +483,41 @@ namespace HopHop.States
           throw new Exception($"Unexpected ability/target combonation: {ability.AbilityType}/{ability.TargetType}");
       }
 
+      if (_targets.Count == 0)
+        return;
 
-      _selectedTargetIndex = -1;
-      SelectNextTarget();
+      //_gui.TargetsGroup.Increment();
+      _gui.SelectedTargetIndex = 0;
+      _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
     }
 
-    private void SelectUnit()
+    private void OnUnitSelect()
     {
       _abilitySelected = false;
-      _selectedTargetIndex = -1;
+      _targets = new List<Unit>();
+      _gui.TargetsGroup.CurrentIndex = -1;
+
       _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
     }
 
-    private void SelectTarget()
+    private void OnTargetSelect()
     {
-      _selectedTargetIndex = _gui.SelectedTargetIndex;
+      if (_gui.TargetsGroup.PreviousIndex == _gui.TargetsGroup.CurrentIndex)
+      {
+        var unit = _units[_gui.SelectedUnitIndex];
+
+        unit.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
+
+        _unitManager.State = UnitManager.States.Moving;
+        _targets = new List<Unit>();
+        _gui.HoveringTargetIndex = -1;
+
+        _abilitySelected = false;
+
+        return;
+      }
 
       _camera.GoTo(_targets[_gui.SelectedTargetIndex].TileRectangle);
-    }
-
-    private void SelectNextUnit()
-    {
-      _gui.SelectedUnitIndex++;
-
-      if (_gui.SelectedUnitIndex >= _units.Count)
-        _gui.SelectedUnitIndex = 0;
-
-      for (int i = 0; i < _units.Count; i++)
-      {
-        if (_units[_gui.SelectedUnitIndex].Stamina > 0)
-          break;
-
-        _gui.SelectedUnitIndex++;
-
-        if (_gui.SelectedUnitIndex >= _units.Count)
-          _gui.SelectedUnitIndex = 0;
-      }
-
-      if (_gui.SelectedUnitIndex < _units.Count)
-      {
-        _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
-      }
-      else
-      {
-        _gui.SelectedUnitIndex = 0;
-      }
-    }
-
-    private void SelectPreviousUnit()
-    {
-      _gui.SelectedUnitIndex--;
-
-      if (_gui.SelectedUnitIndex < 0)
-        _gui.SelectedUnitIndex = _units.Count - 1;
-
-      for (int i = _units.Count - 1; i > -1; i--)
-      {
-        if (_units[_gui.SelectedUnitIndex].Stamina > 0)
-          break;
-
-        _gui.SelectedUnitIndex--;
-
-        if (_gui.SelectedUnitIndex < 0)
-          _gui.SelectedUnitIndex = _units.Count - 1;
-      }
-
-      if (_gui.SelectedUnitIndex < _units.Count)
-      {
-        _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
-      }
-      else
-      {
-        _gui.SelectedUnitIndex = 0;
-      }
-    }
-
-    private int _selectedTargetIndex = -1;
-    private void SelectNextTarget()
-    {
-      _selectedTargetIndex++;
-
-      if (_selectedTargetIndex >= _targets.Count)
-        _selectedTargetIndex = 0;
-
-      for (int i = 0; i < _targets.Count; i++)
-      {
-        _selectedTargetIndex++;
-
-        if (_selectedTargetIndex >= _targets.Count)
-          _selectedTargetIndex = 0;
-      }
-
-      if (_selectedTargetIndex < _targets.Count)
-      {
-        _camera.GoTo(_targets[_selectedTargetIndex].TileRectangle);
-      }
-      else
-      {
-        _selectedTargetIndex = 0;
-      }
-    }
-
-    private void SelectPreviousTarget()
-    {
-      _selectedTargetIndex--;
-
-      if (_selectedTargetIndex < 0)
-        _selectedTargetIndex = _targets.Count - 1;
-
-      for (int i = _targets.Count - 1; i > -1; i--)
-      {
-        _selectedTargetIndex--;
-
-        if (_selectedTargetIndex < 0)
-          _selectedTargetIndex = _targets.Count - 1;
-      }
-
-      if (_selectedTargetIndex < _targets.Count)
-      {
-        _camera.GoTo(_targets[_selectedTargetIndex].TileRectangle);
-      }
-      else
-      {
-        _selectedTargetIndex = 0;
-      }
-
     }
 
     public override void Draw(GameTime gameTime)

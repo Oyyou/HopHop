@@ -33,6 +33,9 @@ namespace HopHop.Lib.Models
 
     public AbilityModel Get(int index)
     {
+      if (index < 0)
+        return null;
+
       return this.Get().ToList()[index];
     }
   }

@@ -53,6 +53,8 @@ namespace HopHop.Units
 
     public int TilesMoved { get; set; } = 0;
 
+    public Color Colour { get; set; } = Color.White;
+
     public Unit(Texture2D texture)
     {
       Texture = texture;
@@ -102,21 +104,22 @@ namespace HopHop.Units
 
     public void Update(GameTime gameTime)
     {
-      _colour = Color.White;
+      //_colour = Color.White;
+      Colour = Color.White;
 
       if (Game1.GameMouse.Intersects_withCamera(this.Rectangle))
         Game1.GameMouse.AddObject(this);
       else Game1.GameMouse.ClickableObjects.Remove(this);
 
-      if (Game1.GameMouse.ValidObject == this)
-        _colour = Color.Gray;
+      //if (Game1.GameMouse.ValidObject == this)
+      //  _colour = Color.Gray;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
       Layer = 0.2f + MathHelper.Clamp(TilePosition.Y / 1000f, 0.0f, 0.7f);
 
-      spriteBatch.Draw(Texture, Position, null, _colour, 0f, new Vector2(0, 0), new Vector2(1f, 1f), SpriteEffects.None, Layer);
+      spriteBatch.Draw(Texture, Position, null, Colour, 0f, new Vector2(0, 0), new Vector2(1f, 1f), SpriteEffects.None, Layer);
     }
   }
 }

@@ -58,6 +58,8 @@ namespace HopHop.GUI.Controls
       }
     }
 
+    public bool IsEnabled { get; set; }
+
     public Color HoverColour { get; set; } = Color.Yellow;
 
     public Button(Texture2D texture)

@@ -8,6 +8,12 @@ namespace HopHop.Lib.Models
 {
   public class UnitModel
   {
+    public enum UnitTypes
+    {
+      Friendly,
+      Enemy,
+    }
+
     private static int _ids;
 
     public readonly int Id;
@@ -24,6 +30,8 @@ namespace HopHop.Lib.Models
     public int Armour { get; set; }
 
     public AbilitiesModel Abilities { get; set; }
+
+    public UnitTypes UnitType { get; set; }
 
     public UnitModel()
     {

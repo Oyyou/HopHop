@@ -77,6 +77,7 @@ namespace HopHop
             Armour = 0,
             Health = 4,
             Speed = 5,
+            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
               Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
@@ -95,6 +96,7 @@ namespace HopHop
             Armour = 0,
             Health = 4,
             Speed = 5,
+            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
               Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
@@ -113,6 +115,7 @@ namespace HopHop
             Armour = 0,
             Health = 4,
             Speed = 5,
+            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
               Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
@@ -131,6 +134,7 @@ namespace HopHop
             Armour = 0,
             Health = 4,
             Speed = 5,
+            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
               Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
