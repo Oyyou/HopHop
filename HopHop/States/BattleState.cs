@@ -205,6 +205,9 @@ namespace HopHop.States
             c.UnitModel.Stamina = 2;
             c.TilesMoved = 0;
           });
+
+          _gui.UnitsGroup.CurrentIndex = 0;
+          OnUnitSelect();
         }
 
         State = NextState;
@@ -259,9 +262,8 @@ namespace HopHop.States
             _unitManager.UpdateUnitIndex = false;
 
             _gui.UnitsGroup.Increment();
-            OnUnitSelect();
-            _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
 
+            _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
           }
 
           _mapManager.Update(gameTime);
@@ -412,8 +414,12 @@ namespace HopHop.States
       var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
 
       _targets = new List<Unit>();
-      _targets.AddRange(_units.Where(c => ability.Targets.Any(v => v.Id == c.UnitModel.Id)));
-      _targets.AddRange(_enemies.Where(c => ability.Targets.Any(v => v.Id == c.UnitModel.Id)));
+
+      foreach(var target in ability.Targets)
+      {
+        _targets.AddRange(_units.Where(c => c.UnitModel.Id == target.Id));
+        _targets.AddRange(_enemies.Where(c => c.UnitModel.Id == target.Id));
+      }
 
       if (_targets.Count == 0)
         return;
@@ -423,6 +429,9 @@ namespace HopHop.States
       _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
     }
 
+    /// <summary>
+    /// Todo: Optimise
+    /// </summary>
     private void OnUnitSelect()
     {
       _abilitySelected = false;

@@ -53,6 +53,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sprites\Sprite.cs" />
+    <Compile Include="Sprites\TilePointer.cs" />
     <Compile Include="Sprites\UnitPointer.cs" />
     <Compile Include="States\BattleState.cs" />
     <Compile Include="States\State.cs" />

@@ -117,6 +117,7 @@ namespace HopHop.GUI.Controls
         if (IsClicked)
         {
           Clicked = true;
+          BaseGame.GameMouse.ClickableObjects.Remove(this);
           OnClick();
         }
       }

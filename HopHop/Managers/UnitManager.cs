@@ -148,7 +148,6 @@ namespace HopHop.Managers
       if (target == null && _previousMapPoint == _currentMapPoint)
         return;
 
-
       var mapPoint = Map.Vector2ToPoint(_selectedUnit.TilePosition);
       var endPoint = _currentMapPoint;
 

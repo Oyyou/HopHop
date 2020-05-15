@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HopHop.Managers
 {
@@ -25,6 +26,8 @@ namespace HopHop.Managers
 
     public Action Refresh;
 
+    private Dictionary<string, Texture2D> _paths = new Dictionary<string, Texture2D>();
+
     public MapManager(ContentManager content)
     {
       Map = new Map(20, 20);
@@ -34,6 +37,15 @@ namespace HopHop.Managers
 
       _gridSprites = new List<Sprite>();
       _sprites = new List<Sprite>();
+
+      _paths.Add("LD", content.Load<Texture2D>("Tiles/Path/LD"));
+      _paths.Add("LR", content.Load<Texture2D>("Tiles/Path/LR"));
+      _paths.Add("LU", content.Load<Texture2D>("Tiles/Path/LU"));
+      _paths.Add("RD", content.Load<Texture2D>("Tiles/Path/RD"));
+      _paths.Add("RU", content.Load<Texture2D>("Tiles/Path/RU"));
+      _paths.Add("UD", content.Load<Texture2D>("Tiles/Path/UD"));
+      _paths.Add("Last_Outer", content.Load<Texture2D>("Tiles/Path/Last_Outer"));
+      _paths.Add("Last_Inner", content.Load<Texture2D>("Tiles/Path/Last_Inner"));
 
       for (int y = 0; y < Map.GetHeight(); y++)
       {
@@ -52,8 +64,6 @@ namespace HopHop.Managers
     public void SetUnit(Unit unit)
     {
       _validUnit = unit;
-
-      _sprites = new List<Sprite>();
     }
 
     public void UnloadContent()
@@ -64,9 +74,11 @@ namespace HopHop.Managers
       _tileBorderTexture.Dispose();
     }
 
+    private Point _currentPosition;
+    private Point _previousPosition;
+
     public void Update(GameTime gameTime)
     {
-      _sprites = new List<Sprite>();
 
       if (_validUnit == null)
         return;
@@ -74,28 +86,126 @@ namespace HopHop.Managers
       if (_validUnit.MovementPositions.Count == 0)
         return;
 
+      _previousPosition = _currentPosition;
+      _currentPosition = _validUnit.MovementPositions.Last();
+
+      if (_previousPosition == _currentPosition)
+        return;
+
+      _sprites = new List<Sprite>();
+
       var speed = _validUnit.UnitModel.Speed;
+      var stamina = _validUnit.UnitModel.Stamina;
 
-      foreach (var p in _validUnit.MovementPositions)
+      for (int i = 0; i < _validUnit.MovementPositions.Count; i++)
       {
-        for (int i = 0; i < speed * 2; i++)
+        var p = _validUnit.MovementPositions[i];
+
+        var path = _validUnit.MovementPositions[i];
+
+        var colour = Color.Green;
+
+        //if (i >= (speed - _validUnit.TilesMoved))
+        //  colour = Color.Orange;
+
+        switch (stamina)
         {
-          if (i >= (_validUnit.MovementPositions.Count))
-            continue;
+          case 2:
 
-          var path = _validUnit.MovementPositions[i];
+            if (i >= (speed - _validUnit.TilesMoved))
+              colour = Color.Orange;
+            break;
 
-          var colour = Color.Green;
+          case 1:
 
-          if (i >= (speed - _validUnit.TilesMoved))
             colour = Color.Orange;
+            break;
+        }
 
-          var unitPosition = Map.Vector2ToPoint(_validUnit.TilePosition);
+        var previousPoint = Map.Vector2ToPoint(_validUnit.TilePosition);
+        var currentPoint = new Point(path.X, path.Y);
+        var nextPoint = Point.Zero;
 
-          _sprites.Add(new Sprite(_tileTexture)
+        if (i > 0)
+          previousPoint = _validUnit.MovementPositions[i - 1];
+
+        if (i < _validUnit.MovementPositions.Count - 1)
+          nextPoint = _validUnit.MovementPositions[i + 1];
+
+        Texture2D texture = null;
+
+        // If this is the last point
+        if (nextPoint == Point.Zero)
+        {
+          if (previousPoint.Y != currentPoint.Y)
+            texture = _paths["UD"];
+          else
+            texture = _paths["LR"];
+        }
+        else
+        {
+          if (previousPoint.Y < currentPoint.Y)
+          {
+            if (nextPoint.Y > currentPoint.Y)
+              texture = _paths["UD"];
+            else if (nextPoint.X < currentPoint.X)
+              texture = _paths["LU"];
+            else if (nextPoint.X > currentPoint.X)
+              texture = _paths["RU"];
+            else
+              throw new Exception("wut");
+          }
+          else if (previousPoint.Y > currentPoint.Y)
+          {
+            if (nextPoint.Y < currentPoint.Y)
+              texture = _paths["UD"];
+            else if (nextPoint.X < currentPoint.X)
+              texture = _paths["LD"];
+            else if (nextPoint.X > currentPoint.X)
+              texture = _paths["RD"];
+            else
+              throw new Exception("wut");
+          }
+          else if (previousPoint.X < currentPoint.X)
+          {
+            if (nextPoint.X > currentPoint.X)
+              texture = _paths["LR"];
+            else if (nextPoint.Y < currentPoint.Y)
+              texture = _paths["LU"];
+            else if (nextPoint.Y > currentPoint.Y)
+              texture = _paths["LD"];
+            else
+              throw new Exception("wut");
+          }
+          else if (previousPoint.X > currentPoint.X)
+          {
+            if (nextPoint.X < currentPoint.X)
+              texture = _paths["LR"];
+            else if (nextPoint.Y < currentPoint.Y)
+              texture = _paths["RU"];
+            else if (nextPoint.Y > currentPoint.Y)
+              texture = _paths["RD"];
+            else
+              throw new Exception("wut");
+          }
+        }
+
+
+        if (i == _validUnit.MovementPositions.Count - 1)
+        {
+          _sprites.Add(new Sprites.TilePointer(_paths["Last_Inner"], _paths["Last_Outer"])
           {
             Colour = colour,
-            Position = Map.PointToVector2(path.X, path.Y),
+            Position = Map.PointToVector2(currentPoint.X, currentPoint.Y),
+            Layer = 0.05f,
+          });
+        }
+        else
+        {
+          _sprites.Add(new Sprite(texture)
+          {
+            Colour = colour,
+            Position = Map.PointToVector2(currentPoint.X, currentPoint.Y),
             Layer = 0.05f,
           });
         }
@@ -104,8 +214,8 @@ namespace HopHop.Managers
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-      foreach (var sprite in _gridSprites)
-        sprite.Draw(gameTime, spriteBatch);
+      //foreach (var sprite in _gridSprites)
+      //  sprite.Draw(gameTime, spriteBatch);
 
       // The tiles we see when the unit tries to move
       foreach (var sprite in _sprites)
