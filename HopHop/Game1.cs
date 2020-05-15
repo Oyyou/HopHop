@@ -77,6 +77,7 @@ namespace HopHop
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Stamina = 2,
             UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
@@ -93,9 +94,11 @@ namespace HopHop
           TilePosition = Map.PointToVector2(4, 2),
           UnitModel = new UnitModel()
           {
+            Name = "Frank",
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Stamina = 2,
             UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
@@ -112,9 +115,11 @@ namespace HopHop
           TilePosition = Map.PointToVector2(2, 3),
           UnitModel = new UnitModel()
           {
+            Name = "Jim",
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Stamina = 2,
             UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {
@@ -131,9 +136,11 @@ namespace HopHop
           TilePosition = Map.PointToVector2(0, 5),
           UnitModel = new UnitModel()
           {
+            Name = "Frim",
             Armour = 0,
             Health = 4,
             Speed = 5,
+            Stamina = 2,
             UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
             Abilities = new AbilitiesModel()
             {

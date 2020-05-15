@@ -49,8 +49,6 @@ namespace HopHop.Units
 
     public UnitModel UnitModel { get; set; }
 
-    public int Stamina { get; set; } = 2;
-
     public int TilesMoved { get; set; } = 0;
 
     public Color Colour { get; set; } = Color.White;
@@ -62,7 +60,7 @@ namespace HopHop.Units
 
     public void SetPath(List<Point> points)
     {
-      int max = UnitModel.Speed * Stamina;
+      int max = UnitModel.Speed * UnitModel.Stamina;
 
       MovementPositions = points.GetRange(0, points.Count > max ? max : points.Count);
     }
@@ -99,7 +97,7 @@ namespace HopHop.Units
     public void UpdateStamina()
     {
       var value = (int)Math.Ceiling((decimal)TilesMoved / UnitModel.Speed);
-      Stamina -= value;
+      UnitModel.Stamina -= value;
     }
 
     public void Update(GameTime gameTime)

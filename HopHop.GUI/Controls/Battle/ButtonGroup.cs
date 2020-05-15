@@ -10,7 +10,7 @@ namespace HopHop.GUI.Controls.Battle
 {
   public class ButtonGroup
   {
-    private List<Button> _buttons = new List<Button>();
+    public List<Button> Buttons = new List<Button>();
 
     public int PreviousIndex { get; set; } = -1;
 
@@ -29,37 +29,37 @@ namespace HopHop.GUI.Controls.Battle
 
     public void SetButtons(Func<List<Button>> getButtons)
     {
-      _buttons = getButtons();
+      Buttons = getButtons();
 
       Rectangle = new Rectangle();
 
-      if (_buttons.Count == 0)
+      if (Buttons.Count == 0)
         return;
 
-      var left = _buttons.OrderBy(c => c.Rectangle.Left).FirstOrDefault().Rectangle.Left;
-      var top = _buttons.OrderBy(c => c.Rectangle.Top).FirstOrDefault().Rectangle.Top;
-      var right = _buttons.OrderBy(c => c.Rectangle.Right).FirstOrDefault().Rectangle.Right;
-      var bottom = _buttons.OrderBy(c => c.Rectangle.Bottom).FirstOrDefault().Rectangle.Bottom;
+      var left = Buttons.OrderBy(c => c.Rectangle.Left).FirstOrDefault().Rectangle.Left;
+      var top = Buttons.OrderBy(c => c.Rectangle.Top).FirstOrDefault().Rectangle.Top;
+      var right = Buttons.OrderBy(c => c.Rectangle.Right).FirstOrDefault().Rectangle.Right;
+      var bottom = Buttons.OrderBy(c => c.Rectangle.Bottom).FirstOrDefault().Rectangle.Bottom;
 
       Rectangle = new Rectangle(left, top, right - left, bottom - top);
     }
 
     public void Update(GameTime gameTime)
     {
-      if (_buttons.Count == 0)
+      if (Buttons.Count == 0)
         return;
 
       HoverIndex = -1;
 
-      for (int i = 0; i < _buttons.Count; i++)
+      for (int i = 0; i < Buttons.Count; i++)
       {
-        _buttons[i].Update(gameTime);
-        _buttons[i].IsSelected = false;
+        Buttons[i].Update(gameTime);
+        Buttons[i].IsSelected = false;
 
-        if (_buttons[i].IsHovering)
+        if (Buttons[i].IsHovering)
           HoverIndex = i;
 
-        if (_buttons[i].IsClicked)
+        if (Buttons[i].IsClicked && Buttons[i].IsEnabled)
         {
           CurrentIndex = i;
           OnButtonChange?.Invoke();
@@ -67,14 +67,14 @@ namespace HopHop.GUI.Controls.Battle
       }
 
       if (CurrentIndex > -1)
-        _buttons[CurrentIndex].IsSelected = true;
+        Buttons[CurrentIndex].IsSelected = true;
 
       PreviousIndex = CurrentIndex;
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
-      foreach (var icon in _buttons)
+      foreach (var icon in Buttons)
         icon.Draw(gameTime, spriteBatch);
     }
 
@@ -82,17 +82,20 @@ namespace HopHop.GUI.Controls.Battle
     {
       CurrentIndex++;
 
-      if (CurrentIndex >= _buttons.Count)
+      if (CurrentIndex >= Buttons.Count)
         CurrentIndex = 0;
 
-      for (int i = 0; i < _buttons.Count; i++)
+      for (int i = 0; i < Buttons.Count; i++)
       {
-        if (_buttons[CurrentIndex].IsEnabled)
+        if (Buttons[CurrentIndex].IsEnabled)
+        {
+          OnButtonChange();
           break;
+        }
 
         CurrentIndex++;
 
-        if (CurrentIndex >= _buttons.Count)
+        if (CurrentIndex >= Buttons.Count)
           CurrentIndex = 0;
       }
     }
@@ -102,17 +105,20 @@ namespace HopHop.GUI.Controls.Battle
       CurrentIndex--;
 
       if (CurrentIndex < 0)
-        CurrentIndex = _buttons.Count - 1;
+        CurrentIndex = Buttons.Count - 1;
 
-      for (int i = _buttons.Count - 1; i > -1; i--)
+      for (int i = Buttons.Count - 1; i > -1; i--)
       {
-        if (_buttons[CurrentIndex].IsEnabled)
+        if (Buttons[CurrentIndex].IsEnabled)
+        {
+          OnButtonChange();
           break;
+        }
 
         CurrentIndex--;
 
         if (CurrentIndex < 0)
-          CurrentIndex = _buttons.Count - 1;
+          CurrentIndex = Buttons.Count - 1;
       }
     }
   }

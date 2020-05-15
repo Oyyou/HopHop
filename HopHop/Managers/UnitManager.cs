@@ -70,9 +70,13 @@ namespace HopHop.Managers
 
     }
 
+    public bool FinisedMoving = false;
+
     public void Update(GameTime gameTime, BattleGUI gui, Unit selectedTarget)
     {
       _selectedUnit = _units[gui.SelectedUnitIndex];
+
+      FinisedMoving = false;
 
       switch (State)
       {
@@ -81,7 +85,7 @@ namespace HopHop.Managers
           _previousMapPoint = _currentMapPoint;
           _currentMapPoint = Map.Vector2ToPoint(Game1.GameMouse.Position_WithCamera);
 
-          if (Game1.GameMouse.HasRightClicked && _selectedUnit != null)
+          if (Game1.GameMouse.HasRightClicked && _selectedUnit != null && Game1.GameMouse.ClickableObjects.Count == 0)
           {
             State = States.Moving;
           }
@@ -101,10 +105,12 @@ namespace HopHop.Managers
 
           if (_selectedUnit.MovementPositions.Count == 0)
           {
+            FinisedMoving = true;
+
             _selectedUnit.UpdateStamina();
             _mapManager.Refresh();
 
-            if (_selectedUnit.Stamina <= 0)
+            if (_selectedUnit.UnitModel.Stamina <= 0)
               UpdateUnitIndex = true;
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace HopHop.Lib.Models
 {
@@ -32,6 +33,12 @@ namespace HopHop.Lib.Models
     public readonly TargetTypes TargetType;
 
     public readonly AbilityTypes AbilityType;
+
+    [XmlIgnore]
+    public bool IsEnabled { get; set; }
+
+    [XmlIgnore]
+    public List<UnitModel> Targets { get; set; }
 
     public AbilityModel(string text, string iconName, int staminaCost, TargetTypes targetType, AbilityTypes abilityType)
     {

@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static HopHop.Lib.Enums;
 using Microsoft.Xna.Framework.Input;
+using HopHop.Lib.Models;
 
 namespace HopHop.States
 {
@@ -183,6 +184,8 @@ namespace HopHop.States
       };
 
       _font = Content.Load<SpriteFont>("Fonts/Font");
+
+      OnUnitSelect();
     }
 
     public override void UnloadContent()
@@ -199,7 +202,7 @@ namespace HopHop.States
         {
           _units.ForEach(c =>
           {
-            c.Stamina = 2;
+            c.UnitModel.Stamina = 2;
             c.TilesMoved = 0;
           });
         }
@@ -225,6 +228,9 @@ namespace HopHop.States
           _camera.Update(gameTime);
           _unitManager.Update(gameTime, _gui, (selectedTargetIndex > -1 && selectedTargetIndex < _targets.Count) ? _targets[selectedTargetIndex] : null);
 
+          if (_unitManager.FinisedMoving)
+            OnUnitSelect();
+
           foreach (var unit in _units)
             unit.Update(gameTime);
 
@@ -232,20 +238,35 @@ namespace HopHop.States
             unit.Update(gameTime);
 
           if (_gui.HoveringTargetIndex > -1)
-            _targets[_gui.HoveringTargetIndex].Colour = Color.Red;
+          {
+            var target = _targets[_gui.HoveringTargetIndex];
+
+            switch (target.UnitModel.UnitType)
+            {
+              case Lib.Models.UnitModel.UnitTypes.Friendly:
+                target.Colour = Color.Blue;
+                break;
+              case Lib.Models.UnitModel.UnitTypes.Enemy:
+                target.Colour = Color.Red;
+                break;
+              default:
+                break;
+            }
+          }
 
           if (_unitManager.UpdateUnitIndex)
           {
             _unitManager.UpdateUnitIndex = false;
 
             _gui.UnitsGroup.Increment();
+            OnUnitSelect();
             _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
 
           }
 
           _mapManager.Update(gameTime);
 
-          if (_units.All(c => c.Stamina <= 0) && _unitManager.State == UnitManager.States.Selected)
+          if (_units.All(c => c.UnitModel.Stamina <= 0) && _unitManager.State == UnitManager.States.Selected)
           {
             NextState = BattleStates.EnemyTurn;
           }
@@ -362,7 +383,7 @@ namespace HopHop.States
         {
           var unit = _units[_gui.SelectedUnitIndex];
 
-          unit.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
+          unit.UnitModel.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
 
           _unitManager.State = UnitManager.States.Moving;
           _targets = new List<Unit>();
@@ -387,12 +408,34 @@ namespace HopHop.States
       _abilitySelected = true;
 
       var unit = _units[_gui.SelectedUnitIndex];
-      var unitDistance = unit.Stamina * unit.UnitModel.Speed;
+      var unitDistance = unit.UnitModel.Stamina * unit.UnitModel.Speed;
       var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
 
       _targets = new List<Unit>();
+      _targets.AddRange(_units.Where(c => ability.Targets.Any(v => v.Id == c.UnitModel.Id)));
+      _targets.AddRange(_enemies.Where(c => ability.Targets.Any(v => v.Id == c.UnitModel.Id)));
 
+      if (_targets.Count == 0)
+        return;
+
+      //_gui.TargetsGroup.Increment();
+      _gui.SelectedTargetIndex = 0;
+      _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
+    }
+
+    private void OnUnitSelect()
+    {
+      _abilitySelected = false;
+      _targets = new List<Unit>();
+      _gui.TargetsGroup.CurrentIndex = -1;
+
+      var unit = _units[_gui.SelectedUnitIndex];
+      var unitDistance = unit.UnitModel.Stamina * unit.UnitModel.Speed;
       var unitPoint = Map.Vector2ToPoint(unit.TilePosition);
+
+      _camera.GoTo(unit.TileRectangle);
+
+      var targets = new List<Unit>();
 
       Action<List<Unit>> setCloseTargets = (units) =>
       {
@@ -434,7 +477,7 @@ namespace HopHop.States
             tempUnits.Add(new Tuple<int, Unit>(distance, u));
         }
 
-        _targets.AddRange(tempUnits.OrderBy(c => c.Item1).Select(c => c.Item2));
+        targets.AddRange(tempUnits.OrderBy(c => c.Item1).Select(c => c.Item2));
       };
 
       Action<List<Unit>> setRangedTargets = (units) =>
@@ -446,58 +489,54 @@ namespace HopHop.States
         }
       };
 
-      switch (ability.AbilityType)
+      foreach (var ability in unit.UnitModel.Abilities.Get())
       {
-        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
-          setCloseTargets(_enemies);
-          break;
+        targets = new List<Unit>();
 
-        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
-          setCloseTargets(_units);
-          break;
+        ability.IsEnabled = false;
 
-        case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
-          setCloseTargets(_enemies);
-          setCloseTargets(_units);
-          break;
+        switch (ability.AbilityType)
+        {
+          case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
+            setCloseTargets(_enemies);
+            break;
 
-        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
-          setRangedTargets(_enemies);
-          break;
+          case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
+            setCloseTargets(_units);
+            break;
 
-        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
-          setRangedTargets(_units);
-          break;
+          case Lib.Models.AbilityModel.AbilityTypes.Close when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
+            setCloseTargets(_enemies);
+            setCloseTargets(_units);
+            break;
 
-        case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
-          setRangedTargets(_enemies);
-          setRangedTargets(_units);
-          break;
+          case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Enemies):
+            setRangedTargets(_enemies);
+            break;
 
-        case Lib.Models.AbilityModel.AbilityTypes.Self:
+          case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.Friendlies):
+            setRangedTargets(_units);
+            break;
 
-          _targets.Add(unit);
-          break;
+          case Lib.Models.AbilityModel.AbilityTypes.Ranged when (ability.TargetType == Lib.Models.AbilityModel.TargetTypes.All):
+            setRangedTargets(_enemies);
+            setRangedTargets(_units);
+            break;
 
-        default:
-          throw new Exception($"Unexpected ability/target combonation: {ability.AbilityType}/{ability.TargetType}");
+          case Lib.Models.AbilityModel.AbilityTypes.Self:
+
+            targets.Add(unit);
+            break;
+
+          default:
+            throw new Exception($"Unexpected ability/target combonation: {ability.AbilityType}/{ability.TargetType}");
+        }
+
+        ability.Targets = targets.Select(c => c.UnitModel).ToList();
+
+        if (ability.Targets.Count > 0)
+          ability.IsEnabled = true;
       }
-
-      if (_targets.Count == 0)
-        return;
-
-      //_gui.TargetsGroup.Increment();
-      _gui.SelectedTargetIndex = 0;
-      _camera.GoTo(_targets[_gui.TargetsGroup.CurrentIndex].TileRectangle);
-    }
-
-    private void OnUnitSelect()
-    {
-      _abilitySelected = false;
-      _targets = new List<Unit>();
-      _gui.TargetsGroup.CurrentIndex = -1;
-
-      _camera.GoTo(_units[_gui.SelectedUnitIndex].TileRectangle);
     }
 
     private void OnTargetSelect()
@@ -506,7 +545,7 @@ namespace HopHop.States
       {
         var unit = _units[_gui.SelectedUnitIndex];
 
-        unit.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
+        unit.UnitModel.Stamina -= unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex).StaminaCost;
 
         _unitManager.State = UnitManager.States.Moving;
         _targets = new List<Unit>();

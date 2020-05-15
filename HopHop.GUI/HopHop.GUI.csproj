@@ -44,7 +44,7 @@
     <Compile Include="BattleGUI.cs" />
     <Compile Include="Controls\Battle\ButtonGroup.cs" />
     <Compile Include="Controls\Button.cs" />
-    <Compile Include="Game1.cs" />
+    <Compile Include="GUIGame1.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

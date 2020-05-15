@@ -25,6 +25,8 @@ namespace HopHop.GUI
 
     private Sprite _controlPanel;
 
+    private SpriteFont _font;
+
     public ButtonGroup UnitsGroup { get; private set; } = new ButtonGroup();
 
     public ButtonGroup AbilitiesGroup { get; private set; } = new ButtonGroup();
@@ -98,10 +100,33 @@ namespace HopHop.GUI
 
     public int SelectedUnitId { get; set; }
 
+    private string UnitName
+    {
+      get
+      {
+        return _units[UnitsGroup.CurrentIndex].Name;
+      }
+    }
+
+    private string AbilityName
+    {
+      get
+      {
+        var ability = _units[UnitsGroup.CurrentIndex].Abilities.Get(AbilitiesGroup.CurrentIndex);
+
+        if (ability == null)
+          return "";
+
+        return ability.IconName;
+      }
+    }
+
     public BattleGUI(GameModel gameModel, List<UnitModel> units)
     {
       _gameModel = gameModel;
       _units = units;
+
+      _font = _gameModel.Content.Load<SpriteFont>("GUI/Fonts/Font");
 
       SelectedUnitId = _units.First().Id;
 
@@ -180,7 +205,7 @@ namespace HopHop.GUI
         var texture = _abilityIconTextures[newUnit.Id][i];
 
         if (ability != null)
-          buttons.Add(new Button(texture, _abilityIconClickedTexture) { Position = new Vector2(x, y), });
+          buttons.Add(new Button(texture, _abilityIconClickedTexture) { Position = new Vector2(x, y), IsEnabled = ability.IsEnabled, });
 
         x += texture.Width + 2;
       }
@@ -281,6 +306,19 @@ namespace HopHop.GUI
       if (_endTurnButton.Clicked)
         NextState = BattleStates.EnemyTurn;
 
+      for (int i = 0; i < UnitsGroup.Buttons.Count; i++)
+      {
+        UnitsGroup.Buttons[i].IsEnabled = true;
+
+        if (_units[i].Stamina <= 0)
+          UnitsGroup.Buttons[i].IsEnabled = false;
+      }
+
+      for (int i = 0; i < AbilitiesGroup.Buttons.Count; i++)
+      {
+        AbilitiesGroup.Buttons[i].IsEnabled = _units[UnitsGroup.CurrentIndex].Abilities.Get(i).IsEnabled;
+      }
+
       UnitsGroup.Update(gameTime);
 
       AbilitiesGroup.Update(gameTime);
@@ -300,6 +338,9 @@ namespace HopHop.GUI
       AbilitiesGroup.Draw(gameTime, spriteBatch);
 
       TargetsGroup.Draw(gameTime, spriteBatch);
+
+      spriteBatch.DrawString(_font, UnitName, new Vector2(_controlPanel.Position.X + 4, _controlPanel.Position.Y + 4), Color.White);
+      spriteBatch.DrawString(_font, AbilityName, new Vector2(AbilitiesGroup.Rectangle.X + 4, AbilitiesGroup.Rectangle.Y - 15), Color.White);
 
       spriteBatch.End();
     }

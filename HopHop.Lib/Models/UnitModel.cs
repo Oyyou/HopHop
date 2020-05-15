@@ -21,9 +21,11 @@ namespace HopHop.Lib.Models
     public string Name { get; set; }
 
     /// <summary>
-    /// Tiles that can be covered in 1-turn
+    /// Tiles that can be covered with 1 stamina
     /// </summary>
     public int Speed { get; set; }
+
+    public int Stamina { get; set; }
 
     public int Health { get; set; }
 

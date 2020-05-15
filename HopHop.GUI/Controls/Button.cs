@@ -1,4 +1,5 @@
-﻿using HopHop.Lib;
+﻿using Engine.Input;
+using HopHop.Lib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace HopHop.GUI.Controls
 {
-  public class Button
+  public class Button : IClickable
   {
     private Texture2D _texture;
 
@@ -46,7 +47,7 @@ namespace HopHop.GUI.Controls
     {
       get
       {
-        return IsHovering && BaseGame.GameMouse.HasLeftClicked;
+        return IsHovering && (BaseGame.GameMouse.HasLeftClicked || BaseGame.GameMouse.HasRightClicked);
       }
     }
 
@@ -58,9 +59,13 @@ namespace HopHop.GUI.Controls
       }
     }
 
-    public bool IsEnabled { get; set; }
+    public bool IsEnabled { get; set; } = true;
 
     public Color HoverColour { get; set; } = Color.Yellow;
+
+    public Color DisabledColour { get; set; } = Color.Gray;
+
+    public float Layer { get; set; } = 1f;
 
     public Button(Texture2D texture)
     {
@@ -93,6 +98,16 @@ namespace HopHop.GUI.Controls
     {
       _colour = Color.White;
 
+      if (BaseGame.GameMouse.Intersects(this.Rectangle))
+        BaseGame.GameMouse.AddObject(this);
+      else BaseGame.GameMouse.ClickableObjects.Remove(this);
+
+      if (!IsEnabled)
+      {
+        _colour = DisabledColour;
+        return;
+      }
+
       Clicked = false;
 
       if (IsHovering)
@@ -122,7 +137,7 @@ namespace HopHop.GUI.Controls
     {
       spriteBatch.Draw(_texture, Position, null, _colour, 0f, Origin, 1f, SpriteEffects.None, 0);
 
-      if(IsSelected && _clickTexture != null)
+      if (IsSelected && _clickTexture != null)
         spriteBatch.Draw(_clickTexture, Position, null, _colour, 0f, Origin, 1f, SpriteEffects.None, 0);
 
       DrawText(spriteBatch);

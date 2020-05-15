@@ -157,3 +157,10 @@
 /processorParam:TextureFormat=Color
 /build:GUI/Battle/TargetIcons/Friendly.png
 
+#begin GUI/Fonts/Font.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/Fonts/Font.spritefont
+
