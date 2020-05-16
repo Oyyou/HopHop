@@ -43,6 +43,8 @@ namespace HopHop.Units
 
     public List<Point> MovementPositions { get; private set; } = new List<Point>();
 
+    public List<Tuple<int, Point>> PotentialPoints = new List<Tuple<int, Point>>();
+
     public Vector2 TilePosition { get; set; }
 
     public float Layer { get; set; }
@@ -67,6 +69,8 @@ namespace HopHop.Units
 
     internal void Move()
     {
+      PotentialPoints = new List<Tuple<int, Point>>();
+
       if (MovementPositions.Count == 0)
         return;
 

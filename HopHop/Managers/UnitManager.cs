@@ -72,6 +72,10 @@ namespace HopHop.Managers
 
     public bool FinisedMoving = false;
 
+    private Vector2 _previousPosition;
+
+    private Vector2 _currentPosition;
+
     public void Update(GameTime gameTime, BattleGUI gui, Unit selectedTarget)
     {
       _selectedUnit = _units[gui.SelectedUnitIndex];
@@ -91,6 +95,43 @@ namespace HopHop.Managers
           }
 
           _mapManager.SetUnit(_selectedUnit);
+
+          _previousPosition = _currentPosition;
+          _currentPosition = _selectedUnit.Position;
+
+          if (_previousPosition != _currentPosition)
+          {
+            _selectedUnit.PotentialPoints = new List<Tuple<int, Point>>();
+
+            var unitPoint = Map.Vector2ToPoint(_selectedUnit.TilePosition);
+
+            var distance = (_selectedUnit.UnitModel.Speed * _selectedUnit.UnitModel.Stamina);
+
+            var top = (int)MathHelper.Max(unitPoint.Y - (distance + 1), 0);
+            var left = (int)MathHelper.Max(unitPoint.X - (distance + 1), 0);
+
+            var right = (int)MathHelper.Min(unitPoint.X + (distance + 1), _mapManager.Map.GetWidth());
+            var bottom = (int)MathHelper.Min(unitPoint.Y + (distance + 1), _mapManager.Map.GetHeight());
+
+            for (var y = top; y < bottom; y++)
+            {
+              for (var x = left; x < right; x++)
+              {
+                var endPoint = new Point(x, y);
+
+                if (unitPoint == endPoint)
+                  continue;
+
+                var pfResult = PathFinder.Find(_mapManager.Map.Get(), unitPoint, endPoint);
+
+                if (pfResult.Status == PathStatus.Valid && pfResult.Path.Count() <= distance)
+                {
+                  _selectedUnit.PotentialPoints.Add(new Tuple<int, Point>(pfResult.Path.Count, pfResult.Path.Last()));
+                }
+              }
+            }
+
+          }
 
           if (_previousTarget != selectedTarget || selectedTarget == null)
           {

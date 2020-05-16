@@ -16,6 +16,8 @@ namespace HopHop.Managers
 
     private List<Sprite> _sprites;
 
+    private List<Sprite> _potentialPathSprites;
+
     private readonly List<Sprite> _gridSprites;
 
     private readonly Texture2D _tileTexture;
@@ -46,6 +48,7 @@ namespace HopHop.Managers
       _paths.Add("UD", content.Load<Texture2D>("Tiles/Path/UD"));
       _paths.Add("Last_Outer", content.Load<Texture2D>("Tiles/Path/Last_Outer"));
       _paths.Add("Last_Inner", content.Load<Texture2D>("Tiles/Path/Last_Inner"));
+      _paths.Add("Tile", content.Load<Texture2D>("Tiles/Tile"));
 
       for (int y = 0; y < Map.GetHeight(); y++)
       {
@@ -77,11 +80,28 @@ namespace HopHop.Managers
     private Point _currentPosition;
     private Point _previousPosition;
 
+    private List<Tuple<int, Point>> _potentialPoints;
+
     public void Update(GameTime gameTime)
     {
-
       if (_validUnit == null)
         return;
+
+      if (_potentialPoints != _validUnit.PotentialPoints)
+      {
+        _potentialPoints = _validUnit.PotentialPoints;
+        _potentialPathSprites = new List<Sprite>();
+
+        foreach (var point in _potentialPoints)
+        {
+          _potentialPathSprites.Add(new Sprite(_paths["Tile"])
+          {
+            Position = Map.PointToVector2(point.Item2.X, point.Item2.Y),
+            Colour = point.Item1 > _validUnit.UnitModel.Speed ? Color.Orange : Color.Green,
+            Layer = 0.049f,
+          });
+        }
+      }
 
       if (_validUnit.MovementPositions.Count == 0)
         return;
@@ -216,6 +236,9 @@ namespace HopHop.Managers
     {
       //foreach (var sprite in _gridSprites)
       //  sprite.Draw(gameTime, spriteBatch);
+
+      foreach (var sprite in _potentialPathSprites)
+        sprite.Draw(gameTime, spriteBatch);
 
       // The tiles we see when the unit tries to move
       foreach (var sprite in _sprites)
