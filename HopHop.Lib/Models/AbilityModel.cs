@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,33 +25,53 @@ namespace HopHop.Lib.Models
       Self,
     }
 
-    public readonly string IconName;
+    public int Id;
 
-    public readonly string Text;
+    public string Name;
 
-    public readonly int StaminaCost;
+    public string Text;
 
-    public readonly TargetTypes TargetType;
+    public int StaminaCost;
+    
+    /// <summary>
+    /// How much the health the target loes on successful cast
+    /// </summary>
+    public int DamageAmount { get; set; }
 
-    public readonly AbilityTypes AbilityType;
+    /// <summary>
+    /// How much the health the target receives on successful cast
+    /// </summary>
+    public int HealAmount { get; set; }
 
-    [XmlIgnore]
+    /// <summary>
+    /// Who can be targeted
+    /// </summary>
+    public TargetTypes TargetType;
+
+    /// <summary>
+    /// Distance of ability
+    /// </summary>
+    public AbilityTypes AbilityType;
+
+    /// <summary>
+    /// What happens to the target on successful cast
+    /// </summary>
+    public List<int> TargetStatusEffects { get; set; }
+
+    /// <summary>
+    /// What happens to the user on successful cast
+    /// </summary>
+    public List<int> SelfStatusEffects { get; set; }
+
+    [JsonIgnore]
     public bool IsEnabled { get; set; }
 
-    [XmlIgnore]
+    [JsonIgnore]
     public List<UnitModel> Targets { get; set; }
 
-    public AbilityModel(string text, string iconName, int staminaCost, TargetTypes targetType, AbilityTypes abilityType)
+    public override string ToString()
     {
-      Text = text;
-
-      StaminaCost = staminaCost;
-
-      IconName = iconName;
-
-      TargetType = targetType;
-
-      AbilityType = abilityType;
+      return Name;
     }
   }
 }

@@ -1,0 +1,10 @@
+{
+  "Id": 2,
+  "Name": "Sling",
+  "Text": "Ability 3",
+  "StaminaCost": 2,
+  "TargetType": 0,
+  "AbilityType": 1,
+  "DamageAmount": 0,
+  "HealAmount": 0
+}

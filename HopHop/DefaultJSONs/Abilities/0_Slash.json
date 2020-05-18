@@ -1,0 +1,10 @@
+{
+  "Id": 0,
+  "Name": "Slash",
+  "Text": "Ability 1",
+  "StaminaCost": 2,
+  "TargetType": 0,
+  "AbilityType": 0,
+  "DamageAmount": 0,
+  "HealAmount": 0
+}

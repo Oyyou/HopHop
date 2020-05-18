@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace HopHop.Lib.Models
 {
@@ -14,9 +16,7 @@ namespace HopHop.Lib.Models
       Enemy,
     }
 
-    private static int _ids;
-
-    public readonly int Id;
+    public int Id;
 
     public string Name { get; set; }
 
@@ -31,17 +31,28 @@ namespace HopHop.Lib.Models
 
     public int Armour { get; set; }
 
+    public List<int> AbilityIds { get; set; }
+
+    [JsonIgnore]
     public AbilitiesModel Abilities { get; set; }
 
     public UnitTypes UnitType { get; set; }
 
     public UnitModel()
     {
-      Id = _ids++;
+      //Id = _ids++;
+    }
+
+    public override string ToString()
+    {
+      return $"{Id}: {Name}";
     }
 
     public override bool Equals(object obj)
     {
+      if (!(obj is UnitModel))
+        return false;
+
       return this.Id == ((UnitModel)obj).Id;
     }
 

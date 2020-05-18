@@ -1,0 +1,15 @@
+{
+  "Id": 2,
+  "Name": "Jim",
+  "Speed": 5,
+  "Stamina": 2,
+  "Health": 4,
+  "Armour": 0,
+  "AbilityIds": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "UnitType": 0
+}

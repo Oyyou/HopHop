@@ -1,0 +1,10 @@
+{
+  "Id": 3,
+  "Name": "Meditate",
+  "Text": "Ability 4",
+  "StaminaCost": 1,
+  "TargetType": 2,
+  "AbilityType": 2,
+  "DamageAmount": 0,
+  "HealAmount": 0
+}

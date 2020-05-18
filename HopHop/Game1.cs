@@ -1,6 +1,7 @@
 ﻿using Engine.Input;
 using Engine.Models;
 using HopHop.Lib;
+using HopHop.Lib.Repositories;
 using HopHop.Lib.Models;
 using HopHop.Managers;
 using HopHop.MapStuff;
@@ -11,6 +12,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HopHop
 {
@@ -66,93 +68,44 @@ namespace HopHop
 
       var testTexture = Content.Load<Texture2D>("Enemy");
 
-      _units = new List<Unit>()
+      _units = new List<Unit>();
+
+      var ar = new AbilityRepository();
+      ar.Load();
+
+      var ur = new UnitRepository();
+      ur.Load(ar);
+
+      var sr = new SquadRepository();
+      sr.Load();
+
+      var startPositions = new List<Point>()
       {
-        new Unit(testTexture)
-        {
-          TilePosition = Map.PointToVector2(1, 2),
-          UnitModel = new UnitModel()
-          {
-            Name = "Fred",
-            Armour = 0,
-            Health = 4,
-            Speed = 5,
-            Stamina = 2,
-            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
-            Abilities = new AbilitiesModel()
-            {
-              Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
-              Ability2 = new AbilityModel("Ability 2", "Heal", 1, AbilityModel.TargetTypes.Friendlies, AbilityModel.AbilityTypes.Close),
-              Ability3 = new AbilityModel("Ability 3", "Sling", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Ranged),
-              Ability4 = new AbilityModel("Ability 4", "Meditate", 1, AbilityModel.TargetTypes.Self, AbilityModel.AbilityTypes.Self),
-            }
-          },
-          Layer = 0.6f,
-        },
-        new Unit(testTexture)
-        {
-          TilePosition = Map.PointToVector2(4, 2),
-          UnitModel = new UnitModel()
-          {
-            Name = "Frank",
-            Armour = 0,
-            Health = 4,
-            Speed = 5,
-            Stamina = 2,
-            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
-            Abilities = new AbilitiesModel()
-            {
-              Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
-              Ability2 = new AbilityModel("Ability 2", "Heal", 1, AbilityModel.TargetTypes.Friendlies, AbilityModel.AbilityTypes.Close),
-              Ability3 = new AbilityModel("Ability 3", "Sling", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Ranged),
-              Ability4 = new AbilityModel("Ability 4", "Meditate", 1, AbilityModel.TargetTypes.Self, AbilityModel.AbilityTypes.Self),
-            }
-          },
-          Layer = 0.6f,
-        },
-        new Unit(testTexture)
-        {
-          TilePosition = Map.PointToVector2(2, 3),
-          UnitModel = new UnitModel()
-          {
-            Name = "Jim",
-            Armour = 0,
-            Health = 4,
-            Speed = 5,
-            Stamina = 2,
-            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
-            Abilities = new AbilitiesModel()
-            {
-              Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
-              Ability2 = new AbilityModel("Ability 2", "Heal", 1, AbilityModel.TargetTypes.Friendlies, AbilityModel.AbilityTypes.Close),
-              Ability3 = new AbilityModel("Ability 3", "Sling", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Ranged),
-              Ability4 = new AbilityModel("Ability 4", "Meditate", 1, AbilityModel.TargetTypes.Self, AbilityModel.AbilityTypes.Self),
-            }
-          },
-          Layer = 0.6f,
-        },
-        new Unit(testTexture)
-        {
-          TilePosition = Map.PointToVector2(0, 5),
-          UnitModel = new UnitModel()
-          {
-            Name = "Frim",
-            Armour = 0,
-            Health = 4,
-            Speed = 5,
-            Stamina = 2,
-            UnitType = Lib.Models.UnitModel.UnitTypes.Friendly,
-            Abilities = new AbilitiesModel()
-            {
-              Ability1 = new AbilityModel("Ability 1", "Slash", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Close),
-              Ability2 = new AbilityModel("Ability 2", "Heal", 1, AbilityModel.TargetTypes.Friendlies, AbilityModel.AbilityTypes.Close),
-              Ability3 = new AbilityModel("Ability 3", "Sling", 2, AbilityModel.TargetTypes.Enemies, AbilityModel.AbilityTypes.Ranged),
-              Ability4 = new AbilityModel("Ability 4", "Meditate", 1, AbilityModel.TargetTypes.Self, AbilityModel.AbilityTypes.Self),
-            }
-          },
-          Layer = 0.6f,
-        },
+        new Point(1, 2),
+        new Point(4, 2),
+        new Point(0, 5),
+        new Point(2, 3),
+        new Point(3, 1),
       };
+
+      var squad = sr.Squads.First();
+
+      foreach (var unitId in squad.UnitIds)
+      {
+        var index = Random.Next(0, startPositions.Count);
+
+        var startPoint = startPositions[index];
+        startPositions.RemoveAt(index);
+
+        var unitModel = ur.GetById(unitId);
+
+        _units.Add(new Unit(testTexture)
+        {
+          TilePosition = Map.PointToVector2(startPoint.X, startPoint.Y),
+          UnitModel = unitModel,
+          Layer = 0.6f,
+        });
+      }
 
       _state = new BattleState(GameModel, _units);
       _state.LoadContent();

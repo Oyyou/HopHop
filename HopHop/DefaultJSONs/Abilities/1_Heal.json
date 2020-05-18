@@ -1,0 +1,10 @@
+{
+  "Id": 1,
+  "Name": "Heal",
+  "Text": "Ability 2",
+  "StaminaCost": 1,
+  "TargetType": 1,
+  "AbilityType": 0,
+  "DamageAmount": 0,
+  "HealAmount": 0
+}

@@ -86,6 +86,8 @@ namespace HopHop.States
         },
       };
 
+      int id = _units.Select(c => c.UnitModel.Id).OrderBy(c => c).Last() + 1;
+
       _enemies = new List<Unit>()
       {
         new Enemy(Content.Load<Texture2D>("Units/Enemies/Egg"))
@@ -93,6 +95,7 @@ namespace HopHop.States
           TilePosition = Map.PointToVector2(7, 7),
           UnitModel = new Lib.Models.UnitModel()
           {
+            Id = id++,
             Armour = 0,
             Health = 5,
             Speed = 2,
@@ -105,6 +108,7 @@ namespace HopHop.States
           TilePosition = Map.PointToVector2(3, 7),
           UnitModel = new Lib.Models.UnitModel()
           {
+            Id = id++,
             Armour = 0,
             Health = 5,
             Speed = 2,
@@ -117,6 +121,7 @@ namespace HopHop.States
           TilePosition = Map.PointToVector2(9, 6),
           UnitModel = new Lib.Models.UnitModel()
           {
+            Id = id++,
             Armour = 0,
             Health = 5,
             Speed = 2,
@@ -163,7 +168,7 @@ namespace HopHop.States
           {
             HasFixedLayer = true,
             Layer = 0,
-            TilePosition = Map.PointToVector2(x, y)
+            TilePosition = Map.PointToVector2(x, y + 1) // TODO: Figure out why I've added +1
           });
         }
       }
@@ -415,7 +420,7 @@ namespace HopHop.States
 
       _targets = new List<Unit>();
 
-      foreach(var target in ability.Targets)
+      foreach (var target in ability.Targets)
       {
         _targets.AddRange(_units.Where(c => c.UnitModel.Id == target.Id));
         _targets.AddRange(_enemies.Where(c => c.UnitModel.Id == target.Id));

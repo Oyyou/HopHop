@@ -8,13 +8,18 @@ namespace HopHop.Lib.Models
 {
   public class AbilitiesModel
   {
-    public AbilityModel Ability1 { get; set; }
+    public readonly AbilityModel Ability1;
+    public readonly AbilityModel Ability2;
+    public readonly AbilityModel Ability3;
+    public readonly AbilityModel Ability4;
 
-    public AbilityModel Ability2 { get; set; }
-
-    public AbilityModel Ability3 { get; set; }
-
-    public AbilityModel Ability4 { get; set; }
+    public AbilitiesModel(List<AbilityModel> abilties)
+    {
+      Ability1 = abilties.Count > 0 ? abilties[0] : null;
+      Ability2 = abilties.Count > 1 ? abilties[1] : null;
+      Ability3 = abilties.Count > 2 ? abilties[2] : null;
+      Ability4 = abilties.Count > 3 ? abilties[3] : null;
+    }
 
     /// <summary>
     /// Get the abilities for this actor

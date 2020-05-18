@@ -117,7 +117,7 @@ namespace HopHop.GUI
         if (ability == null)
           return "";
 
-        return ability.IconName;
+        return ability.Name;
       }
     }
 
@@ -153,7 +153,7 @@ namespace HopHop.GUI
           if (!_abilityIconTextures.ContainsKey(unit.Id))
             _abilityIconTextures.Add(unit.Id, new List<Texture2D>());
 
-          _abilityIconTextures[unit.Id].Add(content.Load<Texture2D>("GUI/Battle/AbilityIcons/" + ability.IconName));
+          _abilityIconTextures[unit.Id].Add(content.Load<Texture2D>("GUI/Battle/AbilityIcons/" + ability.Name));
         }
       }
 
