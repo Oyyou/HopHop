@@ -29,6 +29,7 @@ namespace HopHop.Managers
     public Action Refresh;
 
     private Dictionary<string, Texture2D> _paths = new Dictionary<string, Texture2D>();
+    private Dictionary<string, Texture2D> _potentialPaths = new Dictionary<string, Texture2D>();
 
     public MapManager(ContentManager content)
     {
@@ -49,6 +50,24 @@ namespace HopHop.Managers
       _paths.Add("Last_Outer", content.Load<Texture2D>("Tiles/Path/Last_Outer"));
       _paths.Add("Last_Inner", content.Load<Texture2D>("Tiles/Path/Last_Inner"));
       _paths.Add("Tile", content.Load<Texture2D>("Tiles/Tile"));
+
+      _potentialPaths.Add("1_Left", content.Load<Texture2D>("Tiles/PotentialPaths/1_Left"));
+      _potentialPaths.Add("1_Top", content.Load<Texture2D>("Tiles/PotentialPaths/1_Top"));
+      _potentialPaths.Add("1_Right", content.Load<Texture2D>("Tiles/PotentialPaths/1_Right"));
+      _potentialPaths.Add("1_Bottom", content.Load<Texture2D>("Tiles/PotentialPaths/1_Bottom"));
+
+      _potentialPaths.Add("2_Left", content.Load<Texture2D>("Tiles/PotentialPaths/2_Left"));
+      _potentialPaths.Add("2_Top", content.Load<Texture2D>("Tiles/PotentialPaths/2_Top"));
+      _potentialPaths.Add("2_Right", content.Load<Texture2D>("Tiles/PotentialPaths/2_Right"));
+      _potentialPaths.Add("2_Bottom", content.Load<Texture2D>("Tiles/PotentialPaths/2_Bottom"));
+
+      _potentialPaths.Add("2_LeftRight", content.Load<Texture2D>("Tiles/PotentialPaths/2_LeftRight"));
+      _potentialPaths.Add("2_TopBottom", content.Load<Texture2D>("Tiles/PotentialPaths/2_TopBottom"));
+
+      _potentialPaths.Add("3_Left", content.Load<Texture2D>("Tiles/PotentialPaths/3_Left"));
+      _potentialPaths.Add("3_Top", content.Load<Texture2D>("Tiles/PotentialPaths/3_Top"));
+      _potentialPaths.Add("3_Right", content.Load<Texture2D>("Tiles/PotentialPaths/3_Right"));
+      _potentialPaths.Add("3_Bottom", content.Load<Texture2D>("Tiles/PotentialPaths/3_Bottom"));
 
       for (int y = 0; y < Map.GetHeight(); y++)
       {
@@ -92,12 +111,118 @@ namespace HopHop.Managers
         _potentialPoints = _validUnit.PotentialPoints;
         _potentialPathSprites = new List<Sprite>();
 
-        foreach (var point in _potentialPoints)
+        foreach (var value in _potentialPoints)
         {
-          _potentialPathSprites.Add(new Sprite(_paths["Tile"])
+          var point = value.Item2;
+
+          var left = point + new Point(-1, 0);
+          var top = point + new Point(0, -1);
+          var right = point + new Point(1, 0);
+          var bottom = point + new Point(0, 1);
+
+          var speeed = _validUnit.UnitModel.Speed;
+
+          bool condition(int speed1, int speed2)
           {
-            Position = Map.PointToVector2(point.Item2.X, point.Item2.Y),
-            Colour = point.Item1 > _validUnit.UnitModel.Speed ? Color.Orange : Color.Green,
+            return ((speed1 > speeed && speed2 > speeed) || (speed1 <= speeed && speed2 <= speeed));
+          }
+
+          bool hasLeft = _potentialPoints.Any(c => c.Item2 == left && condition(c.Item1, value.Item1));
+          bool hasTop = _potentialPoints.Any(c => c.Item2 == top && condition(c.Item1, value.Item1));
+          bool hasRight = _potentialPoints.Any(c => c.Item2 == right && condition(c.Item1, value.Item1));
+          bool hasBottom = _potentialPoints.Any(c => c.Item2 == bottom && condition(c.Item1, value.Item1));
+
+          int i = 0;
+          var name = "";
+
+          if (hasLeft && hasRight && hasTop && hasBottom)
+            continue;
+
+
+          if (hasLeft && hasTop && hasRight)
+          {
+            i = 1;
+            name = "Bottom";
+          }
+          else if (hasTop && hasRight && hasBottom)
+          {
+            i = 1;
+            name = "Left";
+          }
+          else if (hasRight && hasBottom && hasLeft)
+          {
+            i = 1;
+            name = "Top";
+          }
+          else if (hasBottom && hasLeft && hasTop)
+          {
+            i = 1;
+            name = "Right";
+          }
+          else if (hasLeft && hasTop)
+          {
+            i = 2;
+            name = "Right";
+          }
+          else if (hasTop && hasRight)
+          {
+            i = 2;
+            name = "Bottom";
+          }
+          else if (hasRight && hasBottom)
+          {
+            i = 2;
+            name = "Left";
+          }
+          else if (hasBottom && hasLeft)
+          {
+            i = 2;
+            name = "Top";
+          }
+          else if (hasLeft && hasRight)
+          {
+            i = 2;
+            name = "LeftRight";
+          }
+          else if (hasTop && hasBottom)
+          {
+            i = 2;
+            name = "TopBottom";
+          }
+          else if (hasLeft)
+          {
+            i = 3;
+            name = "Top";
+          }
+          else if (hasTop)
+          {
+            i = 3;
+            name = "Right";
+          }
+          else if (hasRight)
+          {
+            i = 3;
+            name = "Bottom";
+          }
+          else if (hasBottom)
+          {
+            i = 3;
+            name = "Left";
+          }
+
+
+          var finalName = $"{i}_{name}";
+
+          if (string.IsNullOrEmpty(name))
+            continue;
+
+          if (i > 3)
+            continue;
+
+          _potentialPathSprites.Add(new Sprite(_potentialPaths[finalName])
+          {
+            Position = Map.PointToVector2(point.X, point.Y),
+            Colour = value.Item1 > _validUnit.UnitModel.Speed ? Color.Orange : Color.Green,
             Layer = 0.049f,
           });
         }
