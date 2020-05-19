@@ -16,7 +16,9 @@ namespace HopHop.Managers
 
     private List<Sprite> _sprites;
 
-    private List<Sprite> _potentialPathSprites;
+    private List<Sprite> _pathOutlineSprites;
+
+    private List<Sprite> _endPointSprites = new List<Sprite>();
 
     private readonly List<Sprite> _gridSprites;
 
@@ -69,6 +71,8 @@ namespace HopHop.Managers
       _potentialPaths.Add("3_Right", content.Load<Texture2D>("Tiles/PotentialPaths/3_Right"));
       _potentialPaths.Add("3_Bottom", content.Load<Texture2D>("Tiles/PotentialPaths/3_Bottom"));
 
+      _potentialPaths.Add("4_All", content.Load<Texture2D>("Tiles/PotentialPaths/4_All"));
+
       for (int y = 0; y < Map.GetHeight(); y++)
       {
         for (int x = 0; x < Map.GetWidth(); x++)
@@ -109,7 +113,7 @@ namespace HopHop.Managers
       if (_potentialPoints != _validUnit.PotentialPoints)
       {
         _potentialPoints = _validUnit.PotentialPoints;
-        _potentialPathSprites = new List<Sprite>();
+        _pathOutlineSprites = new List<Sprite>();
 
         foreach (var value in _potentialPoints)
         {
@@ -209,6 +213,11 @@ namespace HopHop.Managers
             i = 3;
             name = "Left";
           }
+          else
+          {
+            i = 4;
+            name = "All";
+          }
 
 
           var finalName = $"{i}_{name}";
@@ -216,10 +225,7 @@ namespace HopHop.Managers
           if (string.IsNullOrEmpty(name))
             continue;
 
-          if (i > 3)
-            continue;
-
-          _potentialPathSprites.Add(new Sprite(_potentialPaths[finalName])
+          _pathOutlineSprites.Add(new Sprite(_potentialPaths[finalName])
           {
             Position = Map.PointToVector2(point.X, point.Y),
             Colour = value.Item1 > _validUnit.UnitModel.Speed ? Color.Orange : Color.Green,
@@ -227,6 +233,9 @@ namespace HopHop.Managers
           });
         }
       }
+
+      if (_validUnit.PotentialPaths.Count == 0)
+        _endPointSprites = new List<Sprite>();
 
       if (_validUnit.MovementPositions.Count == 0)
         return;
@@ -241,6 +250,22 @@ namespace HopHop.Managers
 
       var speed = _validUnit.UnitModel.Speed;
       var stamina = _validUnit.UnitModel.Stamina;
+
+      if (_validUnit.HasPotentialPathsChanged)
+      {
+        _endPointSprites = new List<Sprite>();
+
+        var points = _validUnit.PotentialPaths.Select(c => c.Last());
+        foreach (var point in points)
+        {
+          _endPointSprites.Add(new Sprite(_paths["Tile"])
+          {
+            Colour = Color.Red,
+            Layer = 0.048f,
+            Position = Map.PointToVector2(point.X, point.Y),
+          });
+        }
+      }
 
       for (int i = 0; i < _validUnit.MovementPositions.Count; i++)
       {
@@ -362,7 +387,10 @@ namespace HopHop.Managers
       //foreach (var sprite in _gridSprites)
       //  sprite.Draw(gameTime, spriteBatch);
 
-      foreach (var sprite in _potentialPathSprites)
+      foreach (var sprite in _endPointSprites)
+        sprite.Draw(gameTime, spriteBatch);
+
+      foreach (var sprite in _pathOutlineSprites)
         sprite.Draw(gameTime, spriteBatch);
 
       // The tiles we see when the unit tries to move

@@ -41,6 +41,10 @@ namespace HopHop.Units
       }
     }
 
+    public List<List<Point>> _previousPotentialPaths { get; set; } = new List<List<Point>>();
+    public List<List<Point>> PotentialPaths { get; set; } = new List<List<Point>>();
+    public bool HasPotentialPathsChanged = false;
+
     public List<Point> MovementPositions { get; private set; } = new List<Point>();
 
     public List<Tuple<int, Point>> PotentialPoints = new List<Tuple<int, Point>>();
@@ -60,14 +64,23 @@ namespace HopHop.Units
       Texture = texture;
     }
 
-    public void SetPath(List<Point> points)
+    public void SetPath(List<List<Point>> points)
+    {
+      PotentialPaths = points.OrderBy(c => c.Count).ToList();
+      if (PotentialPaths.Count > 0)
+      {
+        SetPath(PotentialPaths.First());
+      }
+    }
+
+    public void SetPath(List<Point> path)
     {
       int max = UnitModel.Speed * UnitModel.Stamina;
 
-      MovementPositions = points.GetRange(0, points.Count > max ? max : points.Count);
+      MovementPositions = path.GetRange(0, path.Count > max ? max : path.Count);
     }
 
-    internal void Move()
+    public void Move()
     {
       PotentialPoints = new List<Tuple<int, Point>>();
 
@@ -83,7 +96,7 @@ namespace HopHop.Units
         movement.X = -speed;
       else if (targetPosition.X > TilePosition.X)
         movement.X = speed;
-      
+
       if (targetPosition.Y < TilePosition.Y)
         movement.Y = -speed;
       else if (targetPosition.Y > TilePosition.Y)
@@ -108,6 +121,13 @@ namespace HopHop.Units
     {
       //_colour = Color.White;
       Colour = Color.White;
+
+      HasPotentialPathsChanged = false;
+      if (_previousPotentialPaths != PotentialPaths)
+      {
+        HasPotentialPathsChanged = true;
+        _previousPotentialPaths = PotentialPaths;
+      }
 
       if (Game1.GameMouse.Intersects_withCamera(this.Rectangle))
         Game1.GameMouse.AddObject(this);

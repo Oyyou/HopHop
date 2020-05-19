@@ -133,9 +133,15 @@ namespace HopHop.Managers
 
           }
 
-          if (_previousTarget != selectedTarget || selectedTarget == null)
+          if ((_previousTarget != selectedTarget) || 
+              (selectedTarget == null) ||
+              (_previousMapPoint != _currentMapPoint))
           {
-            _previousTarget = selectedTarget;
+            if (_previousTarget != selectedTarget)
+            {
+              _previousTarget = selectedTarget;
+              _selectedUnit.PotentialPaths = new List<List<Point>>();
+            }
             SetUnitPath(selectedTarget);
           }
 
@@ -186,17 +192,27 @@ namespace HopHop.Managers
       if (_selectedUnit == null)
         return;
 
-      if (target == null && _previousMapPoint == _currentMapPoint)
+      if (target == null && _previousMapPoint == _currentMapPoint)      
         return;
 
       var mapPoint = Map.Vector2ToPoint(_selectedUnit.TilePosition);
-      var endPoint = _currentMapPoint;
 
       if (target != null)
       {
-        var targetPoint = Map.Vector2ToPoint(target.TilePosition);
+        if (_selectedUnit.PotentialPaths.Count > 0)
+        {
+          var path = _selectedUnit.PotentialPaths.FirstOrDefault(c => c.Last() == _currentMapPoint);
 
-        var points = new List<Point>()
+          if(path != null)
+            _selectedUnit.SetPath(path);
+        }
+        else
+        {
+          var potentialPaths = new List<List<Point>>();
+
+          var targetPoint = Map.Vector2ToPoint(target.TilePosition);
+
+          var points = new List<Point>()
         {
           targetPoint + new Point(0, -1),   // Top
           targetPoint + new Point(1, -1),   // Top-Right
@@ -208,25 +224,33 @@ namespace HopHop.Managers
           targetPoint + new Point(-1, -1),  // Top-Left
         };
 
-        int length = 100;
+          int length = _selectedUnit.UnitModel.Speed * _selectedUnit.UnitModel.Stamina;
 
-        foreach (var p in points)
-        {
-          var result = PathFinder.Find(_mapManager.Map.Get(), mapPoint, p);
-
-          if (result.Status == PathStatus.Valid)
+          foreach (var p in points)
           {
-            if (result.Path.Count < length)
+            var result = PathFinder.Find(_mapManager.Map.Get(), mapPoint, p);
+
+            if (result.Status == PathStatus.Valid)
             {
-              endPoint = p;
-              length = result.Path.Count;
+
+              if (result.Path.Count <= length)
+              {
+                potentialPaths.Add(result.Path);
+              }
             }
           }
+
+          potentialPaths = potentialPaths.OrderBy(c => c.Count).ToList();
+
+          if (potentialPaths.Count > 0)
+            _selectedUnit.SetPath(potentialPaths);
         }
       }
-
-      var pfResult = PathFinder.Find(_mapManager.Map.Get(), mapPoint, endPoint);
-      _selectedUnit.SetPath(pfResult.Path);
+      else
+      {
+        var pfResult = PathFinder.Find(_mapManager.Map.Get(), mapPoint, _currentMapPoint);
+        _selectedUnit.SetPath(pfResult.Path);
+      }      
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

@@ -494,13 +494,23 @@ namespace HopHop.States
         targets.AddRange(tempUnits.OrderBy(c => c.Item1).Select(c => c.Item2));
       };
 
-      Action<List<Unit>> setRangedTargets = (units) =>
+      Action<List<Unit>> setRangedTargets = (cTargets) =>
       {
-        foreach (var u in units)
+        var tempUnits = new List<Tuple<float, Unit>>();
+
+        foreach (var target in cTargets)
         {
+          var targetPoint = Map.Vector2ToPoint(target.TilePosition);
+          var distance = Vector2.Distance(unitPoint.ToVector2(), targetPoint.ToVector2());
+
+          if (distance < 10)
+            tempUnits.Add(new Tuple<float, Unit>(distance, target));
+
           // if the player 'can see' the unit
           //  then add the unit
         }
+
+        targets.AddRange(tempUnits.OrderBy(c => c.Item1).Select(c => c.Item2));
       };
 
       foreach (var ability in unit.UnitModel.Abilities.Get())
