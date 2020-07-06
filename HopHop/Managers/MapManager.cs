@@ -237,13 +237,16 @@ namespace HopHop.Managers
       if (_validUnit.PotentialPaths.Count == 0)
         _endPointSprites = new List<Sprite>();
 
-      if (_validUnit.MovementPositions.Count == 0)
+      if (_validUnit.MovementPath.Count == 0)
+      {
+        _sprites = new List<Sprite>();
         return;
+      }
 
       _previousPosition = _currentPosition;
-      _currentPosition = _validUnit.MovementPositions.Last();
+      _currentPosition = _validUnit.MovementPath.Last();
 
-      if (_previousPosition == _currentPosition)
+      if (_previousPosition == _currentPosition && !_validUnit.HasPotentialPathsChanged)
         return;
 
       _sprites = new List<Sprite>();
@@ -267,11 +270,11 @@ namespace HopHop.Managers
         }
       }
 
-      for (int i = 0; i < _validUnit.MovementPositions.Count; i++)
+      for (int i = 0; i < _validUnit.MovementPath.Count; i++)
       {
-        var p = _validUnit.MovementPositions[i];
+        var p = _validUnit.MovementPath[i];
 
-        var path = _validUnit.MovementPositions[i];
+        var path = _validUnit.MovementPath[i];
 
         var colour = Color.Green;
 
@@ -297,10 +300,10 @@ namespace HopHop.Managers
         var nextPoint = Point.Zero;
 
         if (i > 0)
-          previousPoint = _validUnit.MovementPositions[i - 1];
+          previousPoint = _validUnit.MovementPath[i - 1];
 
-        if (i < _validUnit.MovementPositions.Count - 1)
-          nextPoint = _validUnit.MovementPositions[i + 1];
+        if (i < _validUnit.MovementPath.Count - 1)
+          nextPoint = _validUnit.MovementPath[i + 1];
 
         Texture2D texture = null;
 
@@ -361,7 +364,7 @@ namespace HopHop.Managers
         }
 
 
-        if (i == _validUnit.MovementPositions.Count - 1)
+        if (i == _validUnit.MovementPath.Count - 1)
         {
           _sprites.Add(new Sprites.TilePointer(_paths["Last_Inner"], _paths["Last_Outer"])
           {

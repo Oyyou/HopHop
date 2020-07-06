@@ -45,7 +45,7 @@ namespace HopHop.Units
     public List<List<Point>> PotentialPaths { get; set; } = new List<List<Point>>();
     public bool HasPotentialPathsChanged = false;
 
-    public List<Point> MovementPositions { get; private set; } = new List<Point>();
+    public List<Point> MovementPath { get; set; } = new List<Point>();
 
     public List<Tuple<int, Point>> PotentialPoints = new List<Tuple<int, Point>>();
 
@@ -66,7 +66,8 @@ namespace HopHop.Units
 
     public void SetPath(List<List<Point>> points)
     {
-      PotentialPaths = points.OrderBy(c => c.Count).ToList();
+      PotentialPaths = points.Where(c => c.Count() > 0).OrderBy(c => c.Count).ToList();
+
       if (PotentialPaths.Count > 0)
       {
         SetPath(PotentialPaths.First());
@@ -77,17 +78,17 @@ namespace HopHop.Units
     {
       int max = UnitModel.Speed * UnitModel.Stamina;
 
-      MovementPositions = path.GetRange(0, path.Count > max ? max : path.Count);
+      MovementPath = path.GetRange(0, path.Count > max ? max : path.Count);
     }
 
     public void Move()
     {
       PotentialPoints = new List<Tuple<int, Point>>();
 
-      if (MovementPositions.Count == 0)
+      if (MovementPath.Count == 0)
         return;
 
-      var point = MovementPositions.First();
+      var point = MovementPath.First();
       var targetPosition = Map.PointToVector2(point.X, point.Y);
 
       var movement = new Vector2();
@@ -106,7 +107,7 @@ namespace HopHop.Units
 
       if (TilePosition == targetPosition)
       {
-        MovementPositions.RemoveAt(0);
+        MovementPath.RemoveAt(0);
         TilesMoved++;
       }
     }
@@ -123,7 +124,7 @@ namespace HopHop.Units
       Colour = Color.White;
 
       HasPotentialPathsChanged = false;
-      if (_previousPotentialPaths != PotentialPaths)
+      if ((_previousPotentialPaths.Count > 0 || PotentialPaths.Count > 0) && _previousPotentialPaths != PotentialPaths)
       {
         HasPotentialPathsChanged = true;
         _previousPotentialPaths = PotentialPaths;

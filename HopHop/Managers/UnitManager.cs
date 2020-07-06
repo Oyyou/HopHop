@@ -11,6 +11,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HopHop.Lib;
+using HopHop.Lib.Models;
+using Engine;
 
 namespace HopHop.Managers
 {
@@ -25,12 +27,20 @@ namespace HopHop.Managers
     private List<Unit> _units = new List<Unit>();
 
     private Unit _previousTarget;
+    private AbilityModel _previousAbility;
 
     private Unit _selectedUnit = null;
 
     private MapManager _mapManager;
 
+    /// <summary>
+    /// Where the cursor was on the map last frame
+    /// </summary>
     private Point _previousMapPoint;
+
+    /// <summary>
+    /// Where the cursor is on the map
+    /// </summary>
     private Point _currentMapPoint;
 
     private Engine.Sprite _unitPointerTile;
@@ -88,6 +98,7 @@ namespace HopHop.Managers
 
           _previousMapPoint = _currentMapPoint;
           _currentMapPoint = Map.Vector2ToPoint(Game1.GameMouse.Position_WithCamera);
+          _currentMapPoint = Helpers.Clamp(_currentMapPoint, new Point(0, 0), new Point(_mapManager.Map.GetWidth(), _mapManager.Map.GetHeight()));
 
           if (Game1.GameMouse.HasRightClicked && _selectedUnit != null && Game1.GameMouse.ClickableObjects.Count == 0)
           {
@@ -130,19 +141,51 @@ namespace HopHop.Managers
                 }
               }
             }
-
           }
 
-          if ((_previousTarget != selectedTarget) || 
+
+          //// if there isn't a target
+          //if (selectedTarget == null)
+          //{
+          //  SetUnitPath();
+          //}
+          //// if the target has changed
+          //else if (_previousTarget != selectedTarget)
+          //{
+          //  SetUnitPath(selectedTarget);
+          //}
+          //// If the mouse has changed tile
+          //else if (_previousMapPoint != _currentMapPoint)
+          //{
+          //  SetUnitPath(selectedTarget);
+          //}
+
+          //_previousTarget = selectedTarget;
+
+          if ((_previousTarget != selectedTarget) ||
               (selectedTarget == null) ||
-              (_previousMapPoint != _currentMapPoint))
+              (_previousMapPoint != _currentMapPoint) ||
+              (_previousAbility != _selectedUnit.UnitModel.Abilities.Get(gui.SelectedAbilityIndex)))
           {
+            _previousAbility = _selectedUnit.UnitModel.Abilities.Get(gui.SelectedAbilityIndex);
+
+            var ability = _selectedUnit.UnitModel.Abilities.Get(gui.SelectedAbilityIndex);
+
             if (_previousTarget != selectedTarget)
             {
               _previousTarget = selectedTarget;
               _selectedUnit.PotentialPaths = new List<List<Point>>();
             }
-            SetUnitPath(selectedTarget);
+
+            if (ability != null)
+            {
+              if (ability.AbilityType == Lib.Models.AbilityModel.AbilityTypes.Close)
+                SetUnitPath(selectedTarget);
+            }
+            else
+            {
+              SetUnitPath(selectedTarget);
+            }
           }
 
           break;
@@ -150,7 +193,7 @@ namespace HopHop.Managers
 
           _selectedUnit.Move();
 
-          if (_selectedUnit.MovementPositions.Count == 0)
+          if (_selectedUnit.MovementPath.Count == 0)
           {
             FinisedMoving = true;
 
@@ -187,23 +230,28 @@ namespace HopHop.Managers
       _unitPointer.Update(gameTime, _selectedUnit.Position);
     }
 
-    private void SetUnitPath(Unit target)
+    private void SetUnitPath(Unit target = null)
     {
       if (_selectedUnit == null)
         return;
 
-      if (target == null && _previousMapPoint == _currentMapPoint)      
+      if (target == null && _previousMapPoint == _currentMapPoint)
         return;
 
       var mapPoint = Map.Vector2ToPoint(_selectedUnit.TilePosition);
 
       if (target != null)
       {
+        //if (_selectedUnit.UnitModel.Equals(target.UnitModel))
+        //{
+
+        //}
+        //else 
         if (_selectedUnit.PotentialPaths.Count > 0)
         {
-          var path = _selectedUnit.PotentialPaths.FirstOrDefault(c => c.Last() == _currentMapPoint);
+          var path = _selectedUnit.PotentialPaths.FirstOrDefault(c => c.Count() > 0 && c.Last() == _currentMapPoint);
 
-          if(path != null)
+          if (path != null)
             _selectedUnit.SetPath(path);
         }
         else
@@ -213,16 +261,16 @@ namespace HopHop.Managers
           var targetPoint = Map.Vector2ToPoint(target.TilePosition);
 
           var points = new List<Point>()
-        {
-          targetPoint + new Point(0, -1),   // Top
-          targetPoint + new Point(1, -1),   // Top-Right
-          targetPoint + new Point(1, 0),    // Right
-          targetPoint + new Point(1, 1),    // Bottom-Right
-          targetPoint + new Point(0, 1),    // Bottom
-          targetPoint + new Point(-1, 1),   // Bottom-Left
-          targetPoint + new Point(-1, 0),   // Left
-          targetPoint + new Point(-1, -1),  // Top-Left
-        };
+          {
+            targetPoint + new Point(0, -1),   // Top
+            targetPoint + new Point(1, -1),   // Top-Right
+            targetPoint + new Point(1, 0),    // Right
+            targetPoint + new Point(1, 1),    // Bottom-Right
+            targetPoint + new Point(0, 1),    // Bottom
+            targetPoint + new Point(-1, 1),   // Bottom-Left
+            targetPoint + new Point(-1, 0),   // Left
+            targetPoint + new Point(-1, -1),  // Top-Left
+          };
 
           int length = _selectedUnit.UnitModel.Speed * _selectedUnit.UnitModel.Stamina;
 
@@ -250,7 +298,7 @@ namespace HopHop.Managers
       {
         var pfResult = PathFinder.Find(_mapManager.Map.Get(), mapPoint, _currentMapPoint);
         _selectedUnit.SetPath(pfResult.Path);
-      }      
+      }
     }
 
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)

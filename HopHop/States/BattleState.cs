@@ -418,6 +418,9 @@ namespace HopHop.States
       var unitDistance = unit.UnitModel.Stamina * unit.UnitModel.Speed;
       var ability = unit.UnitModel.Abilities.Get(_gui.SelectedAbilityIndex);
 
+      unit.PotentialPaths = new List<List<Point>>();
+      unit.MovementPath = new List<Point>();
+
       _targets = new List<Unit>();
 
       foreach (var target in ability.Targets)
@@ -457,6 +460,12 @@ namespace HopHop.States
 
         foreach (var u in units)
         {
+          if (u.UnitModel.Id == unit.UnitModel.Id)
+          {
+            tempUnits.Add(new Tuple<int, Unit>(0, u));
+            continue;
+          }
+
           var uPoint = Map.Vector2ToPoint(u.TilePosition);
 
           var uPoints = new List<Point>()
