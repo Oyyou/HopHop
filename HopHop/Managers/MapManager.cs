@@ -258,7 +258,7 @@ namespace HopHop.Managers
       {
         _endPointSprites = new List<Sprite>();
 
-        var points = _validUnit.PotentialPaths.Select(c => c.Last());
+        var points = _validUnit.PotentialPaths.Where(c => c.Count() > 0).Select(c => c.Last());
         foreach (var point in points)
         {
           _endPointSprites.Add(new Sprite(_paths["Tile"])

@@ -100,7 +100,7 @@ namespace HopHop.Managers
           _currentMapPoint = Map.Vector2ToPoint(Game1.GameMouse.Position_WithCamera);
           _currentMapPoint = Helpers.Clamp(_currentMapPoint, new Point(0, 0), new Point(_mapManager.Map.GetWidth(), _mapManager.Map.GetHeight()));
 
-          if (Game1.GameMouse.HasRightClicked && _selectedUnit != null && Game1.GameMouse.ClickableObjects.Count == 0)
+          if (Game1.GameMouse.HasRightClicked && _selectedUnit != null && Game1.GameMouse.ClickableObjects.Where(c => !(c is Unit)).Count() == 0)
           {
             State = States.Moving;
           }
@@ -251,8 +251,20 @@ namespace HopHop.Managers
         {
           var path = _selectedUnit.PotentialPaths.FirstOrDefault(c => c.Count() > 0 && c.Last() == _currentMapPoint);
 
-          if (path != null)
+          if (path == null)
+          {
+            if (_selectedUnit.PotentialPaths.Any(c => c.Count() == 0) && _currentMapPoint == mapPoint)
+            {
+              _selectedUnit.MovementPath = new List<Point>()
+              {
+                mapPoint,
+              };
+            }
+          }
+          else
+          {
             _selectedUnit.SetPath(path);
+          }
         }
         else
         {

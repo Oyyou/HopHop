@@ -66,11 +66,11 @@ namespace HopHop.Units
 
     public void SetPath(List<List<Point>> points)
     {
-      PotentialPaths = points.Where(c => c.Count() > 0).OrderBy(c => c.Count).ToList();
+      PotentialPaths = points.OrderBy(c => c.Count).ToList();
 
       if (PotentialPaths.Count > 0)
       {
-        SetPath(PotentialPaths.First());
+        SetPath(PotentialPaths.First(c => c.Count() > 0));
       }
     }
 
