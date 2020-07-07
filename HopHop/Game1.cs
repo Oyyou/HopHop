@@ -107,7 +107,8 @@ namespace HopHop
         });
       }
 
-      _state = new BattleState(GameModel, _units);
+      //_state = new BattleState(GameModel, _units);
+      _state = new HomeState(GameModel);
       _state.LoadContent();
     }
 
