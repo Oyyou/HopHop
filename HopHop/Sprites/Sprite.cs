@@ -35,9 +35,11 @@ namespace HopHop.Sprites
       {
         var test = Texture.Height % Map.TileHeight;
 
-        return new Rectangle((int)TilePosition.X, (int)TilePosition.Y, Texture.Width, Texture.Height - Map.TileHeight);
+        return new Rectangle((int)TilePosition.X, (int)TilePosition.Y + TileRectangleTopOffset, Texture.Width, (Texture.Height - Map.TileHeight) - TileRectangleTopOffset);
       }
     }
+
+    public int TileRectangleTopOffset = 0;
 
     public Vector2 TilePosition { get; set; }
 
@@ -58,7 +60,7 @@ namespace HopHop.Sprites
     public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
     {
       if (!HasFixedLayer)
-        Layer = 0.2f + MathHelper.Clamp(TilePosition.Y / 1000f, 0.0f, 0.7f);
+        Layer = 0.2f + MathHelper.Clamp(TileRectangle.Y / 1000f, 0.0f, 0.7f);
 
       spriteBatch.Draw(Texture, Position, null, Color.White, 0f, new Vector2(0, 0), new Vector2(1f, 1f), SpriteEffects.None, Layer);
     }

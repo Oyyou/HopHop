@@ -52,6 +52,7 @@
     <Compile Include="MapStuff\PathFinder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sprites\Home\Building.cs" />
     <Compile Include="Sprites\Home\Player.cs" />
     <Compile Include="Sprites\Sprite.cs" />
     <Compile Include="Sprites\TilePointer.cs" />

@@ -138,10 +138,10 @@ namespace HopHop.MapStuff
       if (y > (_height - 1))
         return CollisionResults.OffBottom;
 
-      if (_map[y, x] == 1)
+      if (_map[y, x] == '1')
         return CollisionResults.Colliding;
 
-      if (_map[y, x] == 2)
+      if (_map[y, x] == '2')
         return CollisionResults.Battle;
 
       return CollisionResults.None;

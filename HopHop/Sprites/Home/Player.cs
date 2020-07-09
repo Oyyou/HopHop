@@ -9,6 +9,7 @@ using Engine.Input;
 using Microsoft.Xna.Framework.Input;
 using HopHop.Lib;
 using HopHop.MapStuff;
+using HopHop.Managers;
 
 namespace HopHop.Sprites.Home
 {
@@ -22,6 +23,8 @@ namespace HopHop.Sprites.Home
 
   public class Player : Sprite
   {
+    private readonly MapManager _mapManager;
+
     private Vector2 _direction = Vector2.Zero;
     private int _distanceTravelling = 0;
 
@@ -41,9 +44,10 @@ namespace HopHop.Sprites.Home
       }
     }
 
-    public Player(Texture2D texture)
+    public Player(Texture2D texture, MapManager map)
       : base(texture)
     {
+      _mapManager = map;
     }
 
     public override void Update(GameTime gameTime)
@@ -57,6 +61,7 @@ namespace HopHop.Sprites.Home
         if (_distanceTravelling == 0)
         {
           _direction = Vector2.Zero;
+          _mapManager.Refresh();
         }
       }
       else
@@ -71,7 +76,25 @@ namespace HopHop.Sprites.Home
           _direction = new Vector2(1, 0);
 
         if (_direction != Vector2.Zero)
+        {
           _distanceTravelling = Map.TileHeight;
+
+          // We add a temp position to the 
+          var newPosition = TilePosition + (_direction * Map.TileHeight);
+          var newRectangle = new Rectangle((int)newPosition.X, (int)newPosition.Y, Map.TileWidth, Map.TileHeight);
+
+          var value = _mapManager.Map.GetValue(newRectangle);
+
+          if (value == Map.CollisionResults.None)
+          {
+            _mapManager.Map.AddItem(newRectangle);
+            _mapManager.Map.Write();
+          }
+          else
+          {
+            _distanceTravelling = 0;
+          }
+        }
       }
     }
   }

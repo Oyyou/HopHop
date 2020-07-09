@@ -16,7 +16,7 @@ namespace HopHop.Managers
 
     private List<Sprite> _sprites;
 
-    private List<Sprite> _pathOutlineSprites;
+    private List<Sprite> _pathOutlineSprites = new List<Sprite>();
 
     private List<Sprite> _endPointSprites = new List<Sprite>();
 
@@ -33,9 +33,9 @@ namespace HopHop.Managers
     private Dictionary<string, Texture2D> _paths = new Dictionary<string, Texture2D>();
     private Dictionary<string, Texture2D> _potentialPaths = new Dictionary<string, Texture2D>();
 
-    public MapManager(ContentManager content)
+    public MapManager(ContentManager content, int width = 20, int height = 20)
     {
-      Map = new Map(20, 20);
+      Map = new Map(width, height);
 
       _tileTexture = content.Load<Texture2D>("Tiles/Tile");
       _tileBorderTexture = content.Load<Texture2D>("Tiles/TileBorder");
