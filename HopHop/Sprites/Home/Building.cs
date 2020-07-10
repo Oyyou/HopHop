@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using HopHop.MapStuff;
 
 namespace HopHop.Sprites.Home
 {
@@ -14,7 +15,7 @@ namespace HopHop.Sprites.Home
     {
       get
       {
-        return new Rectangle(TileRectangle.Left + 80, TileRectangle.Bottom - 80, 40, 80);
+        return new Rectangle(TileRectangle.Left + (Map.TileHeight * 2), TileRectangle.Bottom - Map.TileHeight, Map.TileHeight, Map.TileHeight);
       }
     }
 
