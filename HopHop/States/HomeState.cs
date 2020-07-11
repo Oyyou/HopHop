@@ -19,13 +19,19 @@ namespace HopHop.States
       Inside,
     }
 
+    private Sprite _insideFog;
+
     private Sprite _insideBackground;
 
-    private Player _player;
+    private Player _playerOutside;
+
+    private Player _playerInside;
 
     private Building _house;
 
-    private MapManager _mapManager;
+    private MapManager _mapManagerOutside;
+
+    private MapManager _mapManagerInside;
 
     public States State = States.Outside;
 
@@ -36,24 +42,25 @@ namespace HopHop.States
 
     public override void LoadContent()
     {
-      _mapManager = new MapManager(Content);
+      _mapManagerOutside = new MapManager(Content);
+      _mapManagerInside = new MapManager(Content, BaseGame.ScreenWidth / Map.TileWidth, BaseGame.ScreenHeight / Map.TileHeight);
 
-      _player = new Player(Content.Load<Texture2D>("Enemy"), _mapManager)
+      _playerOutside = new Player(Content.Load<Texture2D>("Enemy"), _mapManagerOutside)
       {
         Speed = 4,
         TilePosition = new Vector2(40, 40),
       };
 
-      _house = new Building(Content.Load<Texture2D>("Buildings/House_01"))
+      _playerInside = new Player(Content.Load<Texture2D>("Enemy"), _mapManagerInside)
       {
-        TilePosition = new Vector2(200, 200),
-        TileRectangleTopOffset = 120,
+        Speed = 4,
+        TilePosition = new Vector2(240, 240),
       };
 
       var pixel = new Texture2D(GraphicsDeviceManager.GraphicsDevice, 1, 1);
       pixel.SetData(new Color[] { Color.Black });
 
-      _insideBackground = new Sprite(pixel)
+      _insideFog = new Sprite(pixel)
       {
         Opacity = 0.8f,
         SourceRectangle = new Rectangle(0, 0, BaseGame.ScreenWidth, BaseGame.ScreenHeight),
@@ -62,24 +69,53 @@ namespace HopHop.States
         TilePositionOffset = 0,
       };
 
-      _mapManager.Refresh = () =>
+      var insideBackgroundText = Content.Load<Texture2D>("Buildings/InsideBackground");
+
+      _insideBackground = new Sprite(insideBackgroundText)
       {
-        _mapManager.Map.Clear();
+        HasFixedLayer = true,
+        Layer = 0.91f,
+        TilePositionOffset = 0,
+        TilePosition = new Vector2((BaseGame.ScreenWidth / 2) - (insideBackgroundText.Width / 2), (BaseGame.ScreenHeight / 2) - (insideBackgroundText.Height / 2)),
+      };
 
-        _mapManager.Map.AddItem(_house.TileRectangle);
-        _mapManager.Map.RemoveItem(_house.EntranceRectangle);
+      _house = new Building(Content.Load<Texture2D>("Buildings/House_01"))
+      {
+        TilePosition = new Vector2(200, 200),
+        TileRectangleTopOffset = 120,
+        ExitRectangle = new Rectangle((_insideBackground.TileRectangle.Left + (_insideBackground.TileRectangle.Width / 2)) - Map.TileWidth, _insideBackground.TileRectangle.Bottom, (Map.TileWidth * 2), Map.TileHeight),
+      };
 
-        _mapManager.Map.AddItem(_player.TileRectangle);
+      _mapManagerOutside.Refresh = () =>
+      {
+        _mapManagerOutside.Map.Clear();
+
+        _mapManagerOutside.Map.AddItem(_house.TileRectangle);
+        _mapManagerOutside.Map.RemoveItem(_house.EntranceRectangle);
+
+        _mapManagerOutside.Map.AddItem(_playerOutside.TileRectangle);
 
         //_mapManager.Map.Write();
       };
 
-      _mapManager.Refresh();
+      _mapManagerInside.Refresh = () =>
+      {
+        _mapManagerInside.Map.Clear();
+
+        _mapManagerInside.Map.AddItem(new Rectangle(0, 0, BaseGame.ScreenWidth, BaseGame.ScreenHeight));
+        _mapManagerInside.Map.RemoveItem(_insideBackground.Rectangle);
+        _mapManagerInside.Map.RemoveItem(_house.ExitRectangle);
+
+        _mapManagerInside.Map.Write();
+      };
+
+      _mapManagerOutside.Refresh();
+      _mapManagerInside.Refresh();
     }
 
     public override void UnloadContent()
     {
-      _mapManager.UnloadContent();
+      _mapManagerOutside.UnloadContent();
     }
 
     public override void Update(GameTime gameTime)
@@ -88,40 +124,48 @@ namespace HopHop.States
       {
         case States.Outside:
 
-          _player.Update(gameTime);
-          _mapManager.Update(gameTime);
+          _playerOutside.Update(gameTime);
+          _mapManagerOutside.Update(gameTime);
 
-          if (_house.EntranceRectangle.Intersects(_player.NextRectangleTile))
+          if (_house.EntranceRectangle.Intersects(_playerOutside.NextRectangleTile))
           {
             State = States.EnteringBuilding;
-            _insideBackground.Opacity = 0.0f;
+            _insideFog.Opacity = 0.0f;
           }
 
           break;
 
         case States.EnteringBuilding:
 
-          _player.Update(gameTime);
-          _mapManager.Update(gameTime);
+          _playerOutside.Update(gameTime);
+          _mapManagerOutside.Update(gameTime);
 
-          var diff = Map.TileHeight / _player.Speed;
-          _insideBackground.Opacity += 0.8f / diff;
+          var diff = Map.TileHeight / _playerOutside.Speed;
+          _insideFog.Opacity += 0.8f / diff;
 
-          if (_player.TileRectangle == _house.EntranceRectangle)
+          if (_playerOutside.TileRectangle == _house.EntranceRectangle)
           {
-            _insideBackground.Opacity = 0.8f;
+            _insideFog.Opacity = 0.8f;
             State = States.Inside;
+
+            _mapManagerInside.Refresh();
+
+            _playerInside.TilePosition = new Vector2(_house.ExitRectangle.X, _house.ExitRectangle.Y);
+            _playerInside.Move(Directions.Up);
           }
 
           break;
 
         case States.Inside:
 
-          if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape))
+          _playerInside.Update(gameTime);
+
+          if (BaseGame.GameKeyboard.IsKeyPressed(Microsoft.Xna.Framework.Input.Keys.Escape) || _house.ExitRectangle.Intersects(_playerInside.NextRectangleTile))
           {
+            _playerInside.NextRectangleTile = Rectangle.Empty;
             State = States.Outside;
-            _mapManager.Map.RemoveItem(_player.TileRectangle);
-            _player.Move(Directions.Down);
+            _mapManagerOutside.Map.RemoveItem(_playerOutside.TileRectangle);
+            _playerOutside.Move(Directions.Down);
           }
 
           break;
@@ -133,37 +177,48 @@ namespace HopHop.States
 
     public override void Draw(GameTime gameTime)
     {
-      SpriteBatch.Begin(SpriteSortMode.FrontToBack);
 
       switch (State)
       {
         case States.Outside:
 
-          _mapManager.Draw(gameTime, SpriteBatch);
+          SpriteBatch.Begin(SpriteSortMode.FrontToBack);
+
           _house.Draw(gameTime, SpriteBatch);
-          _player.Draw(gameTime, SpriteBatch);
+          _playerOutside.Draw(gameTime, SpriteBatch);
+
+          SpriteBatch.End();
 
           break;
         case States.EnteringBuilding:
 
-          _mapManager.Draw(gameTime, SpriteBatch);
-          _house.Draw(gameTime, SpriteBatch);
-          _player.Draw(gameTime, SpriteBatch);
+          SpriteBatch.Begin(SpriteSortMode.FrontToBack);
 
-          _insideBackground.Draw(gameTime, SpriteBatch);
+          _house.Draw(gameTime, SpriteBatch);
+          _playerOutside.Draw(gameTime, SpriteBatch);
+
+          _insideFog.Draw(gameTime, SpriteBatch);
+
+          SpriteBatch.End();
 
           break;
         case States.Inside:
 
-          _mapManager.Draw(gameTime, SpriteBatch);
+          SpriteBatch.Begin(SpriteSortMode.FrontToBack);
           _house.Draw(gameTime, SpriteBatch);
+          SpriteBatch.End();
 
+          SpriteBatch.Begin();
+          _insideFog.Draw(gameTime, SpriteBatch);
           _insideBackground.Draw(gameTime, SpriteBatch);
+          SpriteBatch.End();
+
+          SpriteBatch.Begin(SpriteSortMode.FrontToBack);
+          _playerInside.Draw(gameTime, SpriteBatch);
+          SpriteBatch.End();
 
           break;
       }
-
-      SpriteBatch.End();
     }
   }
 }

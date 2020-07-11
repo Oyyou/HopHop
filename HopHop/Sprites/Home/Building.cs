@@ -19,6 +19,8 @@ namespace HopHop.Sprites.Home
       }
     }
 
+    public Rectangle ExitRectangle { get; set; }
+
     public Building(Texture2D texture)
       : base(texture)
     {
